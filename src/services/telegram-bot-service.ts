@@ -2,9 +2,7 @@ import TelegramBot from "node-telegram-bot-api";
 import { prismaStorageService } from "./prisma-storage-service";
 import { polymarketService } from "./polymarket-service";
 import { walletMonitorService } from "./wallet-monitor-service";
-import { ethers } from "ethers";
 import { WalletClient } from "viem";
-import { walletStorageService } from "./wallet-storage-service";
 
 interface TelegramUpdate {
   update_id: number;
@@ -206,11 +204,15 @@ export class TelegramBotService {
       });
 
       // Check if user already has a wallet
-      let wallet = await walletStorageService.getWalletByTelegramId(telegramId);
+      let wallet = await prismaStorageService.getWalletByTelegramId(telegramId);
 
       if (!wallet) {
         // Create new wallet
-        wallet = await walletStorageService.createWallet(userId);
+        wallet = await prismaStorageService.createWallet({
+          userId,
+          walletAddress: `0x${Math.random().toString(16).substr(2, 40)}`, // Generate placeholder address
+          encryptedPrivateKey: "placeholder_encrypted_key", // Placeholder for now
+        });
         await this.bot.sendMessage(
           chatId,
           `🎉 Welcome! Your wallet has been created successfully.\n\n` +
@@ -247,7 +249,7 @@ export class TelegramBotService {
     }
 
     try {
-      const wallet = await walletStorageService.getWalletByTelegramId(
+      const wallet = await prismaStorageService.getWalletByTelegramId(
         telegramId
       );
 
@@ -349,7 +351,7 @@ export class TelegramBotService {
     }
 
     try {
-      const positions = await walletStorageService.getUserPositionsByTelegramId(
+      const positions = await prismaStorageService.getUserPositionsByTelegramId(
         telegramId
       );
 
@@ -423,7 +425,7 @@ export class TelegramBotService {
     try {
       await this.bot.sendMessage(chatId, "🔄 Processing your trade...");
 
-      const wallet = await walletStorageService.getWalletByTelegramId(
+      const wallet = await prismaStorageService.getWalletByTelegramId(
         telegramId
       );
       if (!wallet) {
@@ -455,7 +457,7 @@ export class TelegramBotService {
       }
 
       // Create wallet signer
-      const signer = await walletStorageService.getWalletSignerByTelegramId(
+      const signer = await prismaStorageService.getWalletSignerByTelegramId(
         telegramId
       );
       if (!signer) {
@@ -480,16 +482,25 @@ export class TelegramBotService {
 
       if (result.success) {
         // Get user ID for saving position
-        const user = await walletStorageService.createOrGetUser(telegramId, {});
+        const user = await prismaStorageService.createOrGetUser(telegramId, {
+          telegramId,
+          username: undefined,
+          firstName: undefined,
+          lastName: undefined,
+        });
 
         // Save position to database
-        await walletStorageService.savePosition(user, {
-          marketId,
-          tokenId,
-          amount,
-          side: side.toLowerCase() as "buy" | "sell",
-          price,
-        });
+        await prismaStorageService.savePosition(
+          { id: user },
+          {
+            userId: user,
+            marketId,
+            tokenId,
+            amount,
+            side: side.toLowerCase() as "buy" | "sell",
+            price,
+          }
+        );
 
         await this.bot.sendMessage(
           chatId,
@@ -563,7 +574,7 @@ export class TelegramBotService {
     }
 
     try {
-      await walletStorageService.deleteUserByTelegramId(telegramId);
+      await prismaStorageService.deleteUserByTelegramId(telegramId);
       await this.bot.sendMessage(
         chatId,
         "🗑️ **Account Deleted**\n\n" +
@@ -800,7 +811,7 @@ export class TelegramBotService {
 
     try {
       // Get wallet
-      const wallet = await walletStorageService.getWalletByTelegramId(
+      const wallet = await prismaStorageService.getWalletByTelegramId(
         telegramId
       );
       if (!wallet) {
@@ -831,7 +842,7 @@ export class TelegramBotService {
       }
 
       // Create wallet signer
-      const signer = await walletStorageService.getWalletSignerByTelegramId(
+      const signer = await prismaStorageService.getWalletSignerByTelegramId(
         telegramId
       );
       if (!signer) {
@@ -858,14 +869,23 @@ export class TelegramBotService {
 
       if (result.success) {
         // Save position to database
-        const user = await walletStorageService.createOrGetUser(telegramId, {});
-        await walletStorageService.savePosition(user, {
-          marketId,
-          tokenId,
-          amount: parseFloat(amount),
-          side: side as "buy" | "sell",
-          price: parseFloat(price),
+        const user = await prismaStorageService.createOrGetUser(telegramId, {
+          telegramId,
+          username: undefined,
+          firstName: undefined,
+          lastName: undefined,
         });
+        await prismaStorageService.savePosition(
+          { id: user },
+          {
+            userId: user,
+            marketId,
+            tokenId,
+            amount: parseFloat(amount),
+            side: side as "buy" | "sell",
+            price: parseFloat(price),
+          }
+        );
 
         await this.bot.editMessageText(
           `✅ **Trade Successful!**\n\n` +
@@ -1071,7 +1091,7 @@ export class TelegramBotService {
 
   stop(): void {
     this.bot.stopPolling();
-    walletStorageService.disconnect();
+    prismaStorageService.disconnect();
   }
 }
 

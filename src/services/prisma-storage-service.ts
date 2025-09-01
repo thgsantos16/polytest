@@ -171,6 +171,61 @@ export class PrismaStorageService {
     });
   }
 
+  // Additional methods needed by the bot
+  async getUserPositionsByTelegramId(telegramId: string) {
+    const user = await prisma.user.findUnique({
+      where: { telegramId },
+    });
+
+    if (!user) return [];
+
+    return await prisma.position.findMany({
+      where: { userId: user.id },
+      orderBy: { createdAt: "desc" },
+    });
+  }
+
+  async getWalletSignerByTelegramId(telegramId: string) {
+    // This method would need to be implemented based on your wallet management
+    // For now, returning null as a placeholder
+    console.warn(
+      "getWalletSignerByTelegramId not implemented in Prisma service"
+    );
+    return null;
+  }
+
+  async savePosition(
+    user: { id: string },
+    positionData: {
+      userId: string;
+      marketId: string;
+      tokenId: string;
+      amount: number;
+      side: string;
+      price: number;
+    }
+  ) {
+    // This method would need to be implemented based on your position management
+    // For now, using createPosition
+    console.warn(
+      "savePosition not implemented in Prisma service, using createPosition"
+    );
+    return await this.createPosition(positionData);
+  }
+
+  async deleteUserByTelegramId(telegramId: string) {
+    const user = await prisma.user.findUnique({
+      where: { telegramId },
+    });
+
+    if (user) {
+      // Delete user (cascades to wallet, positions, etc.)
+      await prisma.user.delete({
+        where: { id: user.id },
+      });
+    }
+  }
+
   // Cleanup
   async disconnect() {
     await prisma.$disconnect();
