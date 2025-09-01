@@ -9,8 +9,5 @@
   },
   "env": {
     "PRISMA_GENERATE_DATAPROXY": "true"
-  },
-  "protectionBypass": {
-    "telegram": "true"
   }
 }
