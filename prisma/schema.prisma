@@ -2,8 +2,9 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
   previewFeatures = ["driverAdapters"]
+  output          = "../src/generated/prisma"
 }
 
 datasource db {
@@ -12,13 +13,13 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  telegramId String  @unique
-  username  String?
-  firstName String?
-  lastName  String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id         String   @id @default(cuid())
+  telegramId String   @unique
+  username   String?
+  firstName  String?
+  lastName   String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
   lastActive DateTime @default(now())
 
   // Relations
@@ -31,13 +32,13 @@ model User {
 }
 
 model Wallet {
-  id                 String   @id @default(cuid())
-  userId             String   @unique
-  walletAddress      String   @unique
+  id                  String   @id @default(cuid())
+  userId              String   @unique
+  walletAddress       String   @unique
   encryptedPrivateKey String   @db.Text
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
-  lastUsed           DateTime @default(now())
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  lastUsed            DateTime @default(now())
 
   // Relations
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -51,7 +52,7 @@ model Position {
   marketId  String
   tokenId   String
   amount    Float
-  side      String   // 'buy' or 'sell'
+  side      String // 'buy' or 'sell'
   price     Float
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -68,9 +69,9 @@ model Transfer {
   transactionHash String   @unique
   from            String
   to              String
-  value           String   // Amount as string to preserve precision
-  token           String   // Token symbol (POL, USDC, etc.)
-  chain           String   // Chain name (polygon, etc.)
+  value           String // Amount as string to preserve precision
+  token           String // Token symbol (POL, USDC, etc.)
+  chain           String // Chain name (polygon, etc.)
   blockNumber     Int
   timestamp       DateTime
   createdAt       DateTime @default(now())
@@ -85,8 +86,8 @@ model Balance {
   id        String   @id @default(cuid())
   userId    String
   chain     String
-  pol       String   // POL balance as string
-  usdc      String   // USDC balance as string
+  pol       String // POL balance as string
+  usdc      String // USDC balance as string
   timestamp DateTime @default(now())
 
   // Relations

@@ -1,0 +1,97 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
+  output          = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("PRISMA_DATABASE_URL")
+}
+
+model User {
+  id         String   @id @default(cuid())
+  telegramId String   @unique
+  username   String?
+  firstName  String?
+  lastName   String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  lastActive DateTime @default(now())
+
+  // Relations
+  wallet    Wallet?
+  positions Position[]
+  transfers Transfer[]
+  balances  Balance[]
+
+  @@map("users")
+}
+
+model Wallet {
+  id                  String   @id @default(cuid())
+  userId              String   @unique
+  walletAddress       String   @unique
+  encryptedPrivateKey String   @db.Text
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  lastUsed            DateTime @default(now())
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("wallets")
+}
+
+model Position {
+  id        String   @id @default(cuid())
+  userId    String
+  marketId  String
+  tokenId   String
+  amount    Float
+  side      String // 'buy' or 'sell'
+  price     Float
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("positions")
+}
+
+model Transfer {
+  id              String   @id @default(cuid())
+  userId          String
+  transactionHash String   @unique
+  from            String
+  to              String
+  value           String // Amount as string to preserve precision
+  token           String // Token symbol (POL, USDC, etc.)
+  chain           String // Chain name (polygon, etc.)
+  blockNumber     Int
+  timestamp       DateTime
+  createdAt       DateTime @default(now())
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("transfers")
+}
+
+model Balance {
+  id        String   @id @default(cuid())
+  userId    String
+  chain     String
+  pol       String // POL balance as string
+  usdc      String // USDC balance as string
+  timestamp DateTime @default(now())
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("balances")
+}
