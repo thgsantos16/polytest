@@ -127,7 +127,7 @@ export class TelegramBotService {
     this.bot.on("callback_query", async (callbackQuery) => {
       try {
         const data = callbackQuery.data;
-        if (data?.startsWith("trade_")) {
+        if (data?.startsWith("t_")) {
           await this.handleTradeButton(callbackQuery);
         } else if (data?.startsWith("amount_")) {
           await this.handleAmountButton(callbackQuery);
@@ -335,12 +335,12 @@ export class TelegramBotService {
       // Create inline keyboard for each market
       const keyboard = markets.slice(0, 5).map((market, index) => [
         {
-          text: `📈 Buy ${market.question.slice(0, 20)}...`,
-          callback_data: `trade_${market.id}_buy`,
+          text: `📈 Buy ${market.question.slice(0, 15)}...`,
+          callback_data: `t_${market.id}_b`,
         },
         {
-          text: `📉 Sell ${market.question.slice(0, 20)}...`,
-          callback_data: `trade_${market.id}_sell`,
+          text: `📉 Sell ${market.question.slice(0, 15)}...`,
+          callback_data: `t_${market.id}_s`,
         },
       ]);
 
@@ -1004,11 +1004,11 @@ export class TelegramBotService {
       const keyboard = markets.slice(0, 5).map((market, index) => [
         {
           text: `📈 Buy ${market.question.slice(0, 20)}...`,
-          callback_data: `trade_${market.id}_buy`,
+          callback_data: `t_${market.id}_b`,
         },
         {
           text: `📉 Sell ${market.question.slice(0, 20)}...`,
-          callback_data: `trade_${market.id}_sell`,
+          callback_data: `t_${market.id}_s`,
         },
       ]);
 
