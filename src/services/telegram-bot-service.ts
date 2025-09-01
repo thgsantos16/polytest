@@ -1,9 +1,10 @@
 import TelegramBot from "node-telegram-bot-api";
-import { walletStorageService } from "./wallet-storage-service";
+import { prismaStorageService } from "./prisma-storage-service";
 import { polymarketService } from "./polymarket-service";
 import { walletMonitorService } from "./wallet-monitor-service";
 import { ethers } from "ethers";
 import { WalletClient } from "viem";
+import { walletStorageService } from "./wallet-storage-service";
 
 interface TelegramUpdate {
   update_id: number;
@@ -32,8 +33,9 @@ export class TelegramBotService {
     );
 
     try {
+      // For serverless environments, don't start polling
       this.bot = new TelegramBot(token, {
-        polling: true,
+        polling: false, // Disable polling for serverless
       });
       console.log("Telegram bot instance created successfully");
 
@@ -196,7 +198,8 @@ export class TelegramBotService {
 
     try {
       // Create or get user
-      const userId = await walletStorageService.createOrGetUser(telegramId, {
+      const userId = await prismaStorageService.createOrGetUser(telegramId, {
+        telegramId,
         username: msg.from?.username,
         firstName: msg.from?.first_name,
         lastName: msg.from?.last_name,
@@ -1031,10 +1034,15 @@ export class TelegramBotService {
   }
 
   async processUpdate(update: TelegramUpdate): Promise<void> {
+    console.log("Processing update:", JSON.stringify(update, null, 2));
+
     if (update.message) {
       const command = update.message.text?.split(" ")[0];
+      console.log(`Received command: ${command}`);
+
       if (command && this.commands.has(command)) {
         try {
+          console.log(`Executing command: ${command}`);
           await this.commands.get(command)!.handler(update.message);
         } catch (error) {
           console.error(`Error handling command ${command}:`, error);
@@ -1043,6 +1051,12 @@ export class TelegramBotService {
             "❌ An error occurred. Please try again."
           );
         }
+      } else {
+        console.log(`Unknown command: ${command}`);
+        await this.bot.sendMessage(
+          update.message.chat.id,
+          "❌ Unknown command. Use /help to see available commands."
+        );
       }
     }
   }

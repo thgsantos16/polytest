@@ -1,7 +1,7 @@
 import crypto from "crypto";
 import { ethers } from "ethers";
-import { PrismaClient } from "@prisma/client";
-import { Position } from "@prisma/client/edge";
+import { PrismaClient } from "@/generated/prisma";
+import { Position } from "@/generated/prisma";
 
 const prisma = new PrismaClient();
 
