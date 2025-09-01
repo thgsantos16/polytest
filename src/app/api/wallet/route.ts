@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { walletStorageService } from "@/services/wallet-storage-service";
+import { prismaStorageService } from "@/services/prisma-storage-service";
+
 import { ethers } from "ethers";
 
 export async function POST(request: NextRequest) {
@@ -9,18 +10,18 @@ export async function POST(request: NextRequest) {
 
     switch (action) {
       case "create_user":
-        const userId = await walletStorageService.createOrGetUser(
+        const userId = await prismaStorageService.createOrGetUser(
           telegramId,
           userData
         );
         return NextResponse.json({ success: true, userId });
 
       case "create_wallet":
-        const wallet = await walletStorageService.createWallet(telegramId);
+        const wallet = await prismaStorageService.createWallet(telegramId);
         return NextResponse.json({ success: true, wallet });
 
       case "get_wallet":
-        const userWallet = await walletStorageService.getWalletByTelegramId(
+        const userWallet = await prismaStorageService.getWalletByTelegramId(
           telegramId
         );
         if (!userWallet) {
@@ -33,7 +34,7 @@ export async function POST(request: NextRequest) {
 
       case "get_balance":
         const walletForBalance =
-          await walletStorageService.getWalletByTelegramId(telegramId);
+          await prismaStorageService.getWalletByTelegramId(telegramId);
         if (!walletForBalance) {
           return NextResponse.json(
             { success: false, error: "Wallet not found" },
@@ -47,21 +48,26 @@ export async function POST(request: NextRequest) {
 
       case "save_position":
         const { position } = body;
-        const user = await walletStorageService.createOrGetUser(telegramId, {});
-        await walletStorageService.savePosition(user, position);
+        const user = await prismaStorageService.createOrGetUser(telegramId, {
+          telegramId,
+          username: undefined,
+          firstName: undefined,
+          lastName: undefined,
+        });
+        await prismaStorageService.savePosition({ id: user }, position);
         return NextResponse.json({ success: true });
 
       case "get_positions":
         const positions =
-          await walletStorageService.getUserPositionsByTelegramId(telegramId);
+          await prismaStorageService.getUserPositionsByTelegramId(telegramId);
         return NextResponse.json({ success: true, positions });
 
       case "delete_user":
-        await walletStorageService.deleteUserByTelegramId(telegramId);
+        await prismaStorageService.deleteUserByTelegramId(telegramId);
         return NextResponse.json({ success: true });
 
       case "get_stats":
-        const stats = await walletStorageService.getStats();
+        const stats = await prismaStorageService.getStats();
         return NextResponse.json({ success: true, stats });
 
       default:

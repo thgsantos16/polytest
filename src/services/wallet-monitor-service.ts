@@ -1,6 +1,6 @@
 import { ethers } from "ethers";
 import { telegramBotService } from "./telegram-bot-service";
-import { walletStorageService } from "./wallet-storage-service";
+import { prismaStorageService } from "./prisma-storage-service";
 
 // Token contract addresses and ABIs
 const TOKEN_ABI = [
@@ -124,10 +124,10 @@ export class WalletMonitorService {
   ): Promise<void> {
     try {
       // Get all user wallets
-      const users = await walletStorageService.getAllUsers();
+      const users = await prismaStorageService.getAllUsers();
 
       for (const user of users) {
-        const wallet = await walletStorageService.getWalletByTelegramId(
+        const wallet = await prismaStorageService.getWalletByTelegramId(
           user.telegramId
         );
 
@@ -346,10 +346,10 @@ export class WalletMonitorService {
 
   public async checkAllBalances(): Promise<void> {
     try {
-      const users = await walletStorageService.getAllUsers();
+      const users = await prismaStorageService.getAllUsers();
 
       for (const user of users) {
-        const wallet = await walletStorageService.getWalletByTelegramId(
+        const wallet = await prismaStorageService.getWalletByTelegramId(
           user.telegramId
         );
 
@@ -437,7 +437,7 @@ export class WalletMonitorService {
   public async getWalletBalanceForUser(
     telegramId: string
   ): Promise<WalletBalance[]> {
-    const wallet = await walletStorageService.getWalletByTelegramId(telegramId);
+    const wallet = await prismaStorageService.getWalletByTelegramId(telegramId);
     if (!wallet) {
       throw new Error("Wallet not found");
     }

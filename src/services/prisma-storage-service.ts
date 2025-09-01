@@ -276,6 +276,24 @@ export class PrismaStorageService {
     }
   }
 
+  async getStats(): Promise<{
+    totalUsers: number;
+    totalWallets: number;
+    totalPositions: number;
+  }> {
+    const [totalUsers, totalWallets, totalPositions] = await Promise.all([
+      prisma.user.count(),
+      prisma.wallet.count(),
+      prisma.position.count(),
+    ]);
+
+    return {
+      totalUsers,
+      totalWallets,
+      totalPositions,
+    };
+  }
+
   // Cleanup
   async disconnect() {
     await prisma.$disconnect();
