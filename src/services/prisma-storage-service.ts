@@ -1,4 +1,6 @@
 import { PrismaClient } from "@/generated/prisma";
+import { ethers } from "ethers";
+import crypto from "crypto";
 
 const prisma = new PrismaClient();
 
@@ -13,6 +15,7 @@ export interface CreateWalletData {
   userId: string;
   walletAddress: string;
   encryptedPrivateKey: string;
+  encryptionIV: string;
 }
 
 export interface CreateTransferData {
@@ -35,6 +38,33 @@ export interface CreateBalanceData {
 }
 
 export class PrismaStorageService {
+  private readonly ENCRYPTION_KEY =
+    process.env.ENCRYPTION_KEY || "default-key-change-in-production";
+  private readonly ALGORITHM = "aes-256-cbc";
+
+  private encrypt(text: string): { encryptedData: string; iv: string } {
+    const iv = crypto.randomBytes(16);
+    const cipher = crypto.createCipher(this.ALGORITHM, this.ENCRYPTION_KEY);
+    let encrypted = cipher.update(text, "utf8", "hex");
+    encrypted += cipher.final("hex");
+    return { encryptedData: encrypted, iv: iv.toString("hex") };
+  }
+
+  private decrypt(encryptedData: string, iv: string): string {
+    const decipher = crypto.createDecipher(this.ALGORITHM, this.ENCRYPTION_KEY);
+    let decrypted = decipher.update(encryptedData, "hex", "utf8");
+    decrypted += decipher.final("utf8");
+    return decrypted;
+  }
+
+  public encryptPrivateKey(privateKey: string): {
+    encryptedPrivateKey: string;
+    iv: string;
+  } {
+    const { encryptedData, iv } = this.encrypt(privateKey);
+    return { encryptedPrivateKey: encryptedData, iv };
+  }
+
   // User management
   async createOrGetUser(
     telegramId: string,
@@ -84,12 +114,23 @@ export class PrismaStorageService {
     userId: string;
     walletAddress: string;
     encryptedPrivateKey: string;
+    encryptionIV: string;
     createdAt: Date;
     updatedAt: Date;
     lastUsed: Date;
   }> {
     return await prisma.wallet.create({
       data: walletData,
+      select: {
+        id: true,
+        userId: true,
+        walletAddress: true,
+        encryptedPrivateKey: true,
+        encryptionIV: true,
+        createdAt: true,
+        updatedAt: true,
+        lastUsed: true,
+      },
     });
   }
 
@@ -186,12 +227,21 @@ export class PrismaStorageService {
   }
 
   async getWalletSignerByTelegramId(telegramId: string) {
-    // This method would need to be implemented based on your wallet management
-    // For now, returning null as a placeholder
-    console.warn(
-      "getWalletSignerByTelegramId not implemented in Prisma service"
-    );
-    return null;
+    const wallet = await this.getWalletByTelegramId(telegramId);
+    if (!wallet) return null;
+
+    try {
+      // Decrypt the private key
+      const privateKey = this.decrypt(
+        wallet.encryptedPrivateKey,
+        wallet.encryptionIV
+      );
+      const ethersWallet = new ethers.Wallet(privateKey);
+      return ethersWallet;
+    } catch (error) {
+      console.error("Error creating wallet signer:", error);
+      return null;
+    }
   }
 
   async savePosition(

@@ -3,6 +3,7 @@ import { prismaStorageService } from "./prisma-storage-service";
 import { polymarketService } from "./polymarket-service";
 import { walletMonitorService } from "./wallet-monitor-service";
 import { WalletClient } from "viem";
+import { ethers } from "ethers";
 
 interface TelegramUpdate {
   update_id: number;
@@ -207,12 +208,30 @@ export class TelegramBotService {
       let wallet = await prismaStorageService.getWalletByTelegramId(telegramId);
 
       if (!wallet) {
-        // Create new wallet
+        // Create new wallet with real keypair
+        const ethersWallet = ethers.Wallet.createRandom();
+        const walletAddress = ethersWallet.address;
+        const privateKey = ethersWallet.privateKey;
+
+        // Encrypt the private key
+        const { encryptedPrivateKey, iv } =
+          prismaStorageService.encryptPrivateKey(privateKey);
+
         wallet = await prismaStorageService.createWallet({
           userId,
-          walletAddress: `0x${Math.random().toString(16).substr(2, 40)}`, // Generate placeholder address
-          encryptedPrivateKey: "placeholder_encrypted_key", // Placeholder for now
+          walletAddress,
+          encryptedPrivateKey,
+          encryptionIV: iv,
         });
+
+        if (!wallet) {
+          await this.bot.sendMessage(
+            chatId,
+            "❌ Failed to create wallet. Please try again."
+          );
+          return;
+        }
+
         await this.bot.sendMessage(
           chatId,
           `🎉 Welcome! Your wallet has been created successfully.\n\n` +

@@ -2305,6 +2305,7 @@ export namespace Prisma {
     userId: string | null
     walletAddress: string | null
     encryptedPrivateKey: string | null
+    encryptionIV: string | null
     createdAt: Date | null
     updatedAt: Date | null
     lastUsed: Date | null
@@ -2315,6 +2316,7 @@ export namespace Prisma {
     userId: string | null
     walletAddress: string | null
     encryptedPrivateKey: string | null
+    encryptionIV: string | null
     createdAt: Date | null
     updatedAt: Date | null
     lastUsed: Date | null
@@ -2325,6 +2327,7 @@ export namespace Prisma {
     userId: number
     walletAddress: number
     encryptedPrivateKey: number
+    encryptionIV: number
     createdAt: number
     updatedAt: number
     lastUsed: number
@@ -2337,6 +2340,7 @@ export namespace Prisma {
     userId?: true
     walletAddress?: true
     encryptedPrivateKey?: true
+    encryptionIV?: true
     createdAt?: true
     updatedAt?: true
     lastUsed?: true
@@ -2347,6 +2351,7 @@ export namespace Prisma {
     userId?: true
     walletAddress?: true
     encryptedPrivateKey?: true
+    encryptionIV?: true
     createdAt?: true
     updatedAt?: true
     lastUsed?: true
@@ -2357,6 +2362,7 @@ export namespace Prisma {
     userId?: true
     walletAddress?: true
     encryptedPrivateKey?: true
+    encryptionIV?: true
     createdAt?: true
     updatedAt?: true
     lastUsed?: true
@@ -2440,6 +2446,7 @@ export namespace Prisma {
     userId: string
     walletAddress: string
     encryptedPrivateKey: string
+    encryptionIV: string
     createdAt: Date
     updatedAt: Date
     lastUsed: Date
@@ -2467,6 +2474,7 @@ export namespace Prisma {
     userId?: boolean
     walletAddress?: boolean
     encryptedPrivateKey?: boolean
+    encryptionIV?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     lastUsed?: boolean
@@ -2478,6 +2486,7 @@ export namespace Prisma {
     userId?: boolean
     walletAddress?: boolean
     encryptedPrivateKey?: boolean
+    encryptionIV?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     lastUsed?: boolean
@@ -2489,6 +2498,7 @@ export namespace Prisma {
     userId?: boolean
     walletAddress?: boolean
     encryptedPrivateKey?: boolean
+    encryptionIV?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     lastUsed?: boolean
@@ -2511,6 +2521,7 @@ export namespace Prisma {
       userId: string
       walletAddress: string
       encryptedPrivateKey: string
+      encryptionIV: string
       createdAt: Date
       updatedAt: Date
       lastUsed: Date
@@ -2912,6 +2923,7 @@ export namespace Prisma {
     readonly userId: FieldRef<"Wallet", 'String'>
     readonly walletAddress: FieldRef<"Wallet", 'String'>
     readonly encryptedPrivateKey: FieldRef<"Wallet", 'String'>
+    readonly encryptionIV: FieldRef<"Wallet", 'String'>
     readonly createdAt: FieldRef<"Wallet", 'DateTime'>
     readonly updatedAt: FieldRef<"Wallet", 'DateTime'>
     readonly lastUsed: FieldRef<"Wallet", 'DateTime'>
@@ -6283,6 +6295,7 @@ export namespace Prisma {
     userId: 'userId',
     walletAddress: 'walletAddress',
     encryptedPrivateKey: 'encryptedPrivateKey',
+    encryptionIV: 'encryptionIV',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt',
     lastUsed: 'lastUsed'
@@ -6510,6 +6523,7 @@ export namespace Prisma {
     userId?: StringFilter<"Wallet"> | string
     walletAddress?: StringFilter<"Wallet"> | string
     encryptedPrivateKey?: StringFilter<"Wallet"> | string
+    encryptionIV?: StringFilter<"Wallet"> | string
     createdAt?: DateTimeFilter<"Wallet"> | Date | string
     updatedAt?: DateTimeFilter<"Wallet"> | Date | string
     lastUsed?: DateTimeFilter<"Wallet"> | Date | string
@@ -6521,6 +6535,7 @@ export namespace Prisma {
     userId?: SortOrder
     walletAddress?: SortOrder
     encryptedPrivateKey?: SortOrder
+    encryptionIV?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     lastUsed?: SortOrder
@@ -6535,6 +6550,7 @@ export namespace Prisma {
     OR?: WalletWhereInput[]
     NOT?: WalletWhereInput | WalletWhereInput[]
     encryptedPrivateKey?: StringFilter<"Wallet"> | string
+    encryptionIV?: StringFilter<"Wallet"> | string
     createdAt?: DateTimeFilter<"Wallet"> | Date | string
     updatedAt?: DateTimeFilter<"Wallet"> | Date | string
     lastUsed?: DateTimeFilter<"Wallet"> | Date | string
@@ -6546,6 +6562,7 @@ export namespace Prisma {
     userId?: SortOrder
     walletAddress?: SortOrder
     encryptedPrivateKey?: SortOrder
+    encryptionIV?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     lastUsed?: SortOrder
@@ -6562,6 +6579,7 @@ export namespace Prisma {
     userId?: StringWithAggregatesFilter<"Wallet"> | string
     walletAddress?: StringWithAggregatesFilter<"Wallet"> | string
     encryptedPrivateKey?: StringWithAggregatesFilter<"Wallet"> | string
+    encryptionIV?: StringWithAggregatesFilter<"Wallet"> | string
     createdAt?: DateTimeWithAggregatesFilter<"Wallet"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Wallet"> | Date | string
     lastUsed?: DateTimeWithAggregatesFilter<"Wallet"> | Date | string
@@ -6888,6 +6906,7 @@ export namespace Prisma {
     id?: string
     walletAddress: string
     encryptedPrivateKey: string
+    encryptionIV: string
     createdAt?: Date | string
     updatedAt?: Date | string
     lastUsed?: Date | string
@@ -6899,6 +6918,7 @@ export namespace Prisma {
     userId: string
     walletAddress: string
     encryptedPrivateKey: string
+    encryptionIV: string
     createdAt?: Date | string
     updatedAt?: Date | string
     lastUsed?: Date | string
@@ -6908,6 +6928,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     walletAddress?: StringFieldUpdateOperationsInput | string
     encryptedPrivateKey?: StringFieldUpdateOperationsInput | string
+    encryptionIV?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     lastUsed?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -6919,6 +6940,7 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     walletAddress?: StringFieldUpdateOperationsInput | string
     encryptedPrivateKey?: StringFieldUpdateOperationsInput | string
+    encryptionIV?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     lastUsed?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -6929,6 +6951,7 @@ export namespace Prisma {
     userId: string
     walletAddress: string
     encryptedPrivateKey: string
+    encryptionIV: string
     createdAt?: Date | string
     updatedAt?: Date | string
     lastUsed?: Date | string
@@ -6938,6 +6961,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     walletAddress?: StringFieldUpdateOperationsInput | string
     encryptedPrivateKey?: StringFieldUpdateOperationsInput | string
+    encryptionIV?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     lastUsed?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -6948,6 +6972,7 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     walletAddress?: StringFieldUpdateOperationsInput | string
     encryptedPrivateKey?: StringFieldUpdateOperationsInput | string
+    encryptionIV?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     lastUsed?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -7369,6 +7394,7 @@ export namespace Prisma {
     userId?: SortOrder
     walletAddress?: SortOrder
     encryptedPrivateKey?: SortOrder
+    encryptionIV?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     lastUsed?: SortOrder
@@ -7379,6 +7405,7 @@ export namespace Prisma {
     userId?: SortOrder
     walletAddress?: SortOrder
     encryptedPrivateKey?: SortOrder
+    encryptionIV?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     lastUsed?: SortOrder
@@ -7389,6 +7416,7 @@ export namespace Prisma {
     userId?: SortOrder
     walletAddress?: SortOrder
     encryptedPrivateKey?: SortOrder
+    encryptionIV?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     lastUsed?: SortOrder
@@ -7969,6 +7997,7 @@ export namespace Prisma {
     id?: string
     walletAddress: string
     encryptedPrivateKey: string
+    encryptionIV: string
     createdAt?: Date | string
     updatedAt?: Date | string
     lastUsed?: Date | string
@@ -7978,6 +8007,7 @@ export namespace Prisma {
     id?: string
     walletAddress: string
     encryptedPrivateKey: string
+    encryptionIV: string
     createdAt?: Date | string
     updatedAt?: Date | string
     lastUsed?: Date | string
@@ -8097,6 +8127,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     walletAddress?: StringFieldUpdateOperationsInput | string
     encryptedPrivateKey?: StringFieldUpdateOperationsInput | string
+    encryptionIV?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     lastUsed?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -8106,6 +8137,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     walletAddress?: StringFieldUpdateOperationsInput | string
     encryptedPrivateKey?: StringFieldUpdateOperationsInput | string
+    encryptionIV?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     lastUsed?: DateTimeFieldUpdateOperationsInput | Date | string

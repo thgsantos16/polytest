@@ -36,6 +36,7 @@ model Wallet {
   userId              String   @unique
   walletAddress       String   @unique
   encryptedPrivateKey String   @db.Text
+  encryptionIV        String   // Store IV for each encrypted key
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
   lastUsed            DateTime @default(now())

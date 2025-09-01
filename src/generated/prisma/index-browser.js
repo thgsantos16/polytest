@@ -138,6 +138,7 @@ exports.Prisma.WalletScalarFieldEnum = {
   userId: 'userId',
   walletAddress: 'walletAddress',
   encryptedPrivateKey: 'encryptedPrivateKey',
+  encryptionIV: 'encryptionIV',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   lastUsed: 'lastUsed'
