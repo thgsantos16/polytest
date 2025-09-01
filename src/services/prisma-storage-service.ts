@@ -44,14 +44,22 @@ export class PrismaStorageService {
 
   private encrypt(text: string): { encryptedData: string; iv: string } {
     const iv = crypto.randomBytes(16);
-    const cipher = crypto.createCipher(this.ALGORITHM, this.ENCRYPTION_KEY);
+    const cipher = crypto.createCipheriv(
+      this.ALGORITHM,
+      Buffer.from(this.ENCRYPTION_KEY, "hex"),
+      iv
+    );
     let encrypted = cipher.update(text, "utf8", "hex");
     encrypted += cipher.final("hex");
     return { encryptedData: encrypted, iv: iv.toString("hex") };
   }
 
   private decrypt(encryptedData: string, iv: string): string {
-    const decipher = crypto.createDecipher(this.ALGORITHM, this.ENCRYPTION_KEY);
+    const decipher = crypto.createDecipheriv(
+      this.ALGORITHM,
+      Buffer.from(this.ENCRYPTION_KEY, "hex"),
+      Buffer.from(iv, "hex")
+    );
     let decrypted = decipher.update(encryptedData, "hex", "utf8");
     decrypted += decipher.final("utf8");
     return decrypted;
