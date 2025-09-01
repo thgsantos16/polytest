@@ -6,8 +6,8 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
-  url      = env("DATABASE_URL")
+  provider = "postgresql"
+  url      = env("PRISMA_DATABASE_URL")
 }
 
 model User {
@@ -23,6 +23,8 @@ model User {
   // Relations
   wallet    Wallet?
   positions Position[]
+  transfers Transfer[]
+  balances  Balance[]
 
   @@map("users")
 }
@@ -57,4 +59,37 @@ model Position {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("positions")
+}
+
+model Transfer {
+  id              String   @id @default(cuid())
+  userId          String
+  transactionHash String   @unique
+  from            String
+  to              String
+  value           String   // Amount as string to preserve precision
+  token           String   // Token symbol (POL, USDC, etc.)
+  chain           String   // Chain name (polygon, etc.)
+  blockNumber     Int
+  timestamp       DateTime
+  createdAt       DateTime @default(now())
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("transfers")
+}
+
+model Balance {
+  id        String   @id @default(cuid())
+  userId    String
+  chain     String
+  pol       String   // POL balance as string
+  usdc      String   // USDC balance as string
+  timestamp DateTime @default(now())
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("balances")
 }

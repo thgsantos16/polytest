@@ -527,7 +527,7 @@ export class PolymarketService {
           "function approve(address,uint256) returns (bool)",
           "function allowance(address,address) view returns (uint256)",
         ],
-        signer // Use the signer parameter, not a new one
+        signer as unknown as ethers.ContractRunner
       );
 
       // CTF ERC1155 contract for setApprovalForAll
@@ -537,7 +537,7 @@ export class PolymarketService {
           "function setApprovalForAll(address,bool) returns (bool)",
           "function isApprovedForAll(address,address) view returns (bool)",
         ],
-        signer
+        signer as unknown as ethers.ContractRunner
       );
 
       // Check and approve USDC for each Polymarket contract

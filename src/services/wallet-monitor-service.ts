@@ -133,13 +133,13 @@ export class WalletMonitorService {
 
         if (!wallet) continue;
 
-        // Check for ETH transfers
-        await this.checkEthTransfers(
-          chainName,
-          provider,
-          wallet.walletAddress,
-          user.telegramId
-        );
+        // Check for token transfers (skip ETH transfers for now)
+        // await this.checkEthTransfers(
+        //   chainName,
+        //   provider,
+        //   wallet.walletAddress,
+        //   user.telegramId
+        // );
 
         // Check for token transfers
         const chainConfig = CHAINS[chainName as keyof typeof CHAINS];
