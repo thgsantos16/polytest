@@ -138,6 +138,8 @@ export class TelegramBotService {
     // Handle callback queries (button clicks)
     this.bot.on("callback_query", async (callbackQuery) => {
       try {
+        console.log("Callback query received:", callbackQuery);
+
         const data = callbackQuery.data;
         if (data?.startsWith("t_")) {
           await this.handleTradeButton(callbackQuery);
@@ -804,7 +806,7 @@ export class TelegramBotService {
     }
 
     // Create amount selection keyboard
-    const amounts = [10, 25, 50, 100, 250, 500];
+    const amounts = [1, 10, 50, 100, 500];
     const keyboard = amounts.map((amount) => [
       {
         text: `$${amount}`,
