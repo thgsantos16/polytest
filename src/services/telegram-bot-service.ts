@@ -568,15 +568,11 @@ export class TelegramBotService {
       `/markets - List available markets (with buttons!)\n` +
       `/positions - Show your current positions\n` +
       `/trade - Place a trade\n` +
-      `/monitor - Start/stop transfer monitoring\n` +
-      `/cache - Check markets cache status\n` +
-      `/cache_clear - Clear markets cache\n` +
       `/help - Show this help message\n` +
       `/delete - Delete your account (irreversible)\n\n` +
       `💡 **Quick Trading:**\n` +
       `Use /markets to see interactive buttons for fast trading!\n\n` +
       `🔔 **Transfer Monitoring:**\n` +
-      `Use /monitor to get notified of incoming ETH, USDC, and POL transfers!\n\n` +
       ` **Markets Cache:**\n` +
       `Markets data is cached for 5 minutes and shared across all users for faster responses!\n\n` +
       `⚠️ **Security:**\n` +
