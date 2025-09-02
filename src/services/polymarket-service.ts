@@ -14,6 +14,7 @@ import { prismaStorageService } from "./prisma-storage-service";
 
 export interface Market {
   id: string;
+  cuid?: string;
   question: string;
   description: string;
   endDate: string;
@@ -292,7 +293,7 @@ export class PolymarketService {
           );
 
           // After getting markets from APIs, store them in database
-          const storedMarketIds: string[] = [];
+          const storedMarketIds: { marketId: string; cuid: string }[] = [];
 
           for (const market of finalMarkets) {
             try {
@@ -316,24 +317,28 @@ export class PolymarketService {
                 isArchived: false,
               });
 
-              storedMarketIds.push(storedId);
+              storedMarketIds.push({
+                marketId: market.id,
+                cuid: storedId,
+              });
             } catch (error) {
               console.warn(`Failed to store market ${market.id}:`, error);
             }
           }
 
-          // Return markets with CUIDs
-          const marketsWithCUIDs = finalMarkets.map((market, index) => ({
+          // Return markets with CUIDs instead of the original IDs
+          const marketsWithCUIDs = finalMarkets.map((market) => ({
             ...market,
-            id: storedMarketIds[index] || market.id, // Use CUID if available, fallback to original
+            id: market.id, // Keep original Polymarket ID
+            cuid: storedMarketIds.find((m) => m.marketId === market.id)?.cuid, // Add CUID as separate property
           }));
 
           console.log(
-            `Markets stored in database with CUIDs. Cache will expire in ${
-              this.CACHE_TTL / 1000 / 60
-            } minutes`
+            `Markets with CUIDs: ${marketsWithCUIDs.length} markets received`,
+            marketsWithCUIDs
           );
 
+          // Make sure to return this instead of the original markets
           return marketsWithCUIDs.slice(0, 20);
         } else {
           console.log("No CLOB condition IDs found, trying CLOB API fallback");

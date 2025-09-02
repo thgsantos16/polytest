@@ -345,14 +345,14 @@ export class TelegramBotService {
         .join("\n\n");
 
       // Create inline keyboard for each market
-      const keyboard = markets.slice(0, 5).map((market, index) => [
+      const keyboard = markets.slice(0, 5).map((market) => [
         {
           text: `📈 Buy ${market.question.slice(0, 15)}...`,
-          callback_data: `t_${market.id}_b`,
+          callback_data: `t_${market.cuid}_b`, // Use .cuid instead of .id
         },
         {
           text: `📉 Sell ${market.question.slice(0, 15)}...`,
-          callback_data: `t_${market.id}_s`,
+          callback_data: `t_${market.cuid}_s`, // Use .cuid instead of .id
         },
       ]);
 
@@ -1090,14 +1090,14 @@ export class TelegramBotService {
         .join("\n\n");
 
       // Create inline keyboard for each market
-      const keyboard = markets.slice(0, 5).map((market, index) => [
+      const keyboard = markets.slice(0, 5).map((market) => [
         {
           text: `📈 Buy ${market.question.slice(0, 20)}...`,
-          callback_data: `t_${market.id}_b`,
+          callback_data: `t_${market.cuid}_b`, // Use .cuid instead of .id
         },
         {
           text: `📉 Sell ${market.question.slice(0, 20)}...`,
-          callback_data: `t_${market.id}_s`,
+          callback_data: `t_${market.cuid}_s`, // Use .cuid instead of .id
         },
       ]);
 
