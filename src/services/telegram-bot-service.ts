@@ -790,11 +790,15 @@ export class TelegramBotService {
     const data = callbackQuery.data;
     if (!data) return;
 
-    const [, marketId, side] = data.split("_");
+    const [, marketCuid, side] = data.split("_");
 
-    // Get market details
-    const markets = await polymarketService.fetchMarkets();
-    const market = markets.find((m) => m.id === marketId);
+    // Give immediate feedback
+    await this.bot.answerCallbackQuery(callbackQuery.id, {
+      text: "🔄 Fetching market details...",
+    });
+
+    // Get market details from database using CUID
+    const market = await prismaStorageService.getMarketById(marketCuid);
 
     if (!market) {
       await this.bot.answerCallbackQuery(callbackQuery.id, {
@@ -808,7 +812,7 @@ export class TelegramBotService {
     const keyboard = amounts.map((amount) => [
       {
         text: `$${amount}`,
-        callback_data: `amount_${marketId}_${side}_${amount}`,
+        callback_data: `amount_${marketCuid}_${side}_${amount}`,
       },
     ]);
 
@@ -847,11 +851,15 @@ export class TelegramBotService {
     const data = callbackQuery.data;
     if (!data) return;
 
-    const [, marketId, side, amount] = data.split("_");
+    const [, marketCuid, side, amount] = data.split("_");
 
-    // Get market details
-    const markets = await polymarketService.fetchMarkets();
-    const market = markets.find((m) => m.id === marketId);
+    // Give immediate feedback
+    await this.bot.answerCallbackQuery(callbackQuery.id, {
+      text: "🔄 Processing amount selection...",
+    });
+
+    // Get market details from database using CUID
+    const market = await prismaStorageService.getMarketById(marketCuid);
 
     if (!market) {
       await this.bot.answerCallbackQuery(callbackQuery.id, {
@@ -868,7 +876,7 @@ export class TelegramBotService {
       [
         {
           text: "✅ Confirm Trade",
-          callback_data: `confirm_${marketId}_${side}_${amount}_${price}`,
+          callback_data: `confirm_${marketCuid}_${side}_${amount}_${price}`,
         },
       ],
       [
@@ -915,7 +923,12 @@ export class TelegramBotService {
     const data = callbackQuery.data;
     if (!data) return;
 
-    const [, marketId, side, amount, price] = data.split("_");
+    const [, marketCuid, side, amount, price] = data.split("_");
+
+    // Give immediate feedback
+    await this.bot.answerCallbackQuery(callbackQuery.id, {
+      text: "🔄 Processing trade confirmation...",
+    });
 
     try {
       // Get wallet
@@ -929,9 +942,8 @@ export class TelegramBotService {
         return;
       }
 
-      // Get market details
-      const markets = await polymarketService.fetchMarkets();
-      const market = markets.find((m) => m.id === marketId);
+      // Get market details from database using CUID
+      const market = await prismaStorageService.getMarketById(marketCuid);
 
       if (!market) {
         await this.bot.answerCallbackQuery(callbackQuery.id, {
@@ -962,7 +974,7 @@ export class TelegramBotService {
 
       // Place order
       const orderDetails = {
-        marketId,
+        marketId: marketCuid,
         tokenId,
         side: side as "buy" | "sell",
         price: parseFloat(price),
@@ -987,7 +999,7 @@ export class TelegramBotService {
           { id: user },
           {
             userId: user,
-            marketId,
+            marketId: marketCuid,
             tokenId,
             amount: parseFloat(amount),
             side: side as "buy" | "sell",

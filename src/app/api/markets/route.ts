@@ -18,7 +18,10 @@ export async function GET(request: NextRequest) {
       order,
     });
 
-    const response = await fetch(`${gammaApiUrl}?${params}`);
+    const finalUrl = `${gammaApiUrl}?${params}`;
+    console.log("Final URL:", finalUrl);
+
+    const response = await fetch(finalUrl);
 
     if (!response.ok) {
       return NextResponse.json(
