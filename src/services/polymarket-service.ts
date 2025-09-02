@@ -214,7 +214,7 @@ export class PolymarketService {
         }
 
         data = await response.json();
-        console.log(`Gamma API: ${data?.length || 0} markets received`);
+        console.log(`Gamma API: ${data?.length || 0} markets received`, data);
 
         // Transform Gamma API response to our Market interface
         const markets: Market[] = data
