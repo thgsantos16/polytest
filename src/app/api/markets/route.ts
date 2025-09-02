@@ -72,6 +72,8 @@ export async function GET(request: NextRequest) {
           volume?: number;
           liquidity?: number;
           oneDayPriceChange?: number | null;
+          outcomePrices?: string | null;
+          conditionId?: string | null;
         }) => ({
           id: market.id.toString(),
           cuid: market.id.toString(), // Use original ID as CUID for now
@@ -87,6 +89,8 @@ export async function GET(request: NextRequest) {
           priceChange24h: market.oneDayPriceChange || null,
           yesTokenId: "", // Gamma API doesn't provide token IDs
           noTokenId: "", // Gamma API doesn't provide token IDs
+          outcomePrices: market.outcomePrices || null,
+          conditionId: market.conditionId || null,
         })
       );
 

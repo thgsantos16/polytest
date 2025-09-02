@@ -260,6 +260,7 @@ export class PolymarketService {
               noPrice: noPrice,
               priceChange24h: market.oneDayPriceChange,
               outcomePrices: market.outcomePrices,
+              conditionId: market.conditionId,
               yesTokenId: "", // Gamma API doesn't provide token IDs directly
               noTokenId: "", // We'll need to get these from CLOB API if needed
             };
