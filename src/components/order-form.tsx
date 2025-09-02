@@ -40,7 +40,7 @@ export default function OrderForm({ market, walletAddress }: OrderFormProps) {
     }
 
     // Check if token IDs are available for this market
-    const tokenId = tokenType === "yes" ? market.tokens.yes : market.tokens.no;
+    const tokenId = tokenType === "yes" ? market.yesTokenId : market.noTokenId;
     if (!tokenId) {
       setOrderResult({
         success: false,
@@ -60,7 +60,7 @@ export default function OrderForm({ market, walletAddress }: OrderFormProps) {
 
       const orderDetails = {
         marketId: market.id,
-        tokenId: tokenType === "yes" ? market.tokens.yes : market.tokens.no,
+        tokenId: tokenType === "yes" ? market.yesTokenId : market.noTokenId,
         side: orderType,
         price: tokenType === "yes" ? yesPrice : noPrice,
         size: parseFloat(amount),
@@ -231,7 +231,7 @@ export default function OrderForm({ market, walletAddress }: OrderFormProps) {
       </div>
 
       {/* Trading Availability Warning */}
-      {(!market.tokens.yes || !market.tokens.no) && (
+      {(!market.yesTokenId || !market.noTokenId) && (
         <div className="mb-6 p-3 bg-orange-50 border border-orange-200 rounded-lg">
           <div className="flex items-center space-x-2">
             <svg
@@ -351,9 +351,9 @@ export default function OrderForm({ market, walletAddress }: OrderFormProps) {
       {/* Trade Button */}
       <button
         onClick={handleSubmit}
-        disabled={isSubmitting || !market.tokens.yes || !market.tokens.no}
+        disabled={isSubmitting || !market.yesTokenId || !market.noTokenId}
         className={`w-full font-medium py-3 px-4 rounded-lg transition-colors mb-4 ${
-          isSubmitting || !market.tokens.yes || !market.tokens.no
+          isSubmitting || !market.yesTokenId || !market.noTokenId
             ? "bg-gray-400 cursor-not-allowed"
             : "bg-blue-600 hover:bg-blue-700 text-white"
         }`}
@@ -365,7 +365,7 @@ export default function OrderForm({ market, walletAddress }: OrderFormProps) {
               {signatureRequested ? "Signing Order..." : "Processing..."}
             </span>
           </div>
-        ) : !market.tokens.yes || !market.tokens.no ? (
+        ) : !market.yesTokenId || !market.noTokenId ? (
           "Market Not Available"
         ) : (
           "Trade"
