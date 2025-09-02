@@ -96,7 +96,7 @@ async function getWalletBalance(walletAddress: string): Promise<{
     );
 
     // USDC contract address on Polygon
-    const usdcAddress = "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174";
+    const usdcAddress = "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359";
     const usdcAbi = [
       "function balanceOf(address owner) view returns (uint256)",
       "function decimals() view returns (uint8)",
