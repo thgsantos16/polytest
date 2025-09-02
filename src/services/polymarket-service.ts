@@ -147,7 +147,11 @@ export class PolymarketService {
     }
   }
 
-  async fetchMarkets(): Promise<Market[]> {
+  async fetchMarkets(
+    limit: number = 5,
+    order: string = "createdAt",
+    ascending: boolean = false
+  ): Promise<Market[]> {
     try {
       console.log("Fetching markets from database...");
 
@@ -194,11 +198,16 @@ export class PolymarketService {
         const apiUrl = appUrl + "/api/markets";
         const params = new URLSearchParams({
           active: "true",
-          closed: "false", // Only get open markets
-          limit: "5", // Only get what we need for display
+          closed: "false",
+          limit: limit.toString(),
+          order,
+          ascending: ascending.toString(),
         });
 
-        const response = await fetch(`${apiUrl}?${params}`);
+        const finalUrl = `${apiUrl}?${params}`;
+        console.log("Final URL:", finalUrl);
+
+        const response = await fetch(finalUrl);
 
         if (!response.ok) {
           throw new Error(`Failed to fetch markets: ${response.status}`);
