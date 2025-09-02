@@ -218,10 +218,6 @@ export class PolymarketService {
 
         // Transform Gamma API response to our Market interface
         const markets: Market[] = data
-          .filter((market: GammaApiMarket) => {
-            // Only include active, non-archived markets
-            return market.active && !market.archived;
-          })
           .map((market: GammaApiMarket) => {
             const endDate =
               market.endDate || market.end_date || new Date().toISOString();
@@ -263,6 +259,7 @@ export class PolymarketService {
               yesPrice: yesPrice,
               noPrice: noPrice,
               priceChange24h: market.oneDayPriceChange,
+              outcomePrices: market.outcomePrices,
               yesTokenId: "", // Gamma API doesn't provide token IDs directly
               noTokenId: "", // We'll need to get these from CLOB API if needed
             };
