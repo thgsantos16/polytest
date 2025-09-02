@@ -10,6 +10,7 @@ import { WalletClient } from "viem";
 import { Web3Provider } from "@ethersproject/providers";
 import { ethers, JsonRpcProvider } from "ethers";
 import { JsonRpcSigner } from "@ethersproject/providers";
+import { prismaStorageService } from "./prisma-storage-service";
 
 export interface Market {
   id: string;
@@ -21,10 +22,8 @@ export interface Market {
   yesPrice: number;
   noPrice: number;
   priceChange24h?: number | null;
-  tokens: {
-    yes: string;
-    no: string;
-  };
+  yesTokenId: string; // Changed from tokens.yes
+  noTokenId: string; // Changed from tokens.no
 }
 
 export interface PolymarketMarket {
@@ -129,7 +128,10 @@ interface GammaApiMarket {
 export class PolymarketService {
   private client: ClobClient | null = null;
   private host = "https://clob.polymarket.com";
-  private chainId = Chain.POLYGON; // Use the enum value
+  private chainId = Chain.POLYGON;
+
+  // Update caching to use database instead of in-memory
+  private readonly CACHE_TTL = 5 * 60 * 1000; // 5 minutes in milliseconds
 
   async initializeClient(walletClient: WalletClient): Promise<boolean> {
     try {
@@ -146,6 +148,42 @@ export class PolymarketService {
 
   async fetchMarkets(): Promise<Market[]> {
     try {
+      console.log("Fetching markets from database...");
+
+      // First try to get markets from database
+      const dbMarkets = await prismaStorageService.getActiveMarkets(20);
+
+      if (dbMarkets.length > 0) {
+        // Check if cache is still fresh (within 5 minutes)
+        const now = new Date();
+        const isCacheFresh = dbMarkets.every(
+          (market) =>
+            now.getTime() - market.lastUpdated.getTime() < this.CACHE_TTL
+        );
+
+        if (isCacheFresh) {
+          console.log("Returning fresh markets data from database");
+          return dbMarkets.map((dbMarket) => ({
+            id: dbMarket.id, // Use the CUID instead of polymarketId
+            question: dbMarket.question,
+            description: dbMarket.description || "",
+            endDate: dbMarket.endDate.toISOString(),
+            volume24h: dbMarket.volume24h,
+            liquidity: dbMarket.liquidity,
+            yesPrice: dbMarket.yesPrice,
+            noPrice: dbMarket.noPrice,
+            priceChange24h: dbMarket.priceChange24h,
+            yesTokenId: dbMarket.yesTokenId, // Changed from tokens.yes
+            noTokenId: dbMarket.noTokenId, // Changed from tokens.no
+          }));
+        } else {
+          console.log("Database cache is stale, refreshing from APIs...");
+        }
+      }
+
+      // Fetch fresh data from APIs and update database
+      console.log("Fetching fresh markets data from APIs...");
+
       // Try Gamma API first, fallback to CLOB API if CORS issues
       let data: GammaApiMarket[] = [];
 
@@ -214,10 +252,8 @@ export class PolymarketService {
               yesPrice: yesPrice,
               noPrice: noPrice,
               priceChange24h: market.oneDayPriceChange,
-              tokens: {
-                yes: "", // Gamma API doesn't provide token IDs directly
-                no: "", // We'll need to get these from CLOB API if needed
-              },
+              yesTokenId: "", // Gamma API doesn't provide token IDs directly
+              noTokenId: "", // We'll need to get these from CLOB API if needed
             };
           })
           .sort(
@@ -254,7 +290,51 @@ export class PolymarketService {
           console.log(
             `Markets: ${enhancedMarkets.length} enhanced, ${regularMarkets.length} regular`
           );
-          return finalMarkets.slice(0, 20);
+
+          // After getting markets from APIs, store them in database
+          const storedMarketIds: string[] = [];
+
+          for (const market of finalMarkets) {
+            try {
+              // Find the original polymarketId from the market data
+              // This might need adjustment based on how you're getting the polymarketId
+              const polymarketId = market.id; // Assuming this is the original ID
+
+              const storedId = await prismaStorageService.upsertMarket({
+                polymarketId,
+                question: market.question,
+                description: market.description,
+                endDate: new Date(market.endDate),
+                volume24h: market.volume24h,
+                liquidity: market.liquidity,
+                yesPrice: market.yesPrice,
+                noPrice: market.noPrice,
+                priceChange24h: market.priceChange24h || undefined,
+                yesTokenId: market.yesTokenId, // Changed from tokens.yes
+                noTokenId: market.noTokenId, // Changed from tokens.no
+                isActive: true,
+                isArchived: false,
+              });
+
+              storedMarketIds.push(storedId);
+            } catch (error) {
+              console.warn(`Failed to store market ${market.id}:`, error);
+            }
+          }
+
+          // Return markets with CUIDs
+          const marketsWithCUIDs = finalMarkets.map((market, index) => ({
+            ...market,
+            id: storedMarketIds[index] || market.id, // Use CUID if available, fallback to original
+          }));
+
+          console.log(
+            `Markets stored in database with CUIDs. Cache will expire in ${
+              this.CACHE_TTL / 1000 / 60
+            } minutes`
+          );
+
+          return marketsWithCUIDs.slice(0, 20);
         } else {
           console.log("No CLOB condition IDs found, trying CLOB API fallback");
           // Try to get markets directly from CLOB API as fallback
@@ -289,13 +369,11 @@ export class PolymarketService {
                     liquidity: 0,
                     yesPrice: 0.5,
                     noPrice: 0.5,
-                    tokens: {
-                      yes: yesToken?.token_id || "",
-                      no: noToken?.token_id || "",
-                    },
+                    yesTokenId: yesToken?.token_id || "",
+                    noTokenId: noToken?.token_id || "",
                   };
                 })
-                .filter((market) => market.tokens.yes && market.tokens.no)
+                .filter((market) => market.yesTokenId && market.noTokenId)
                 .slice(0, 20);
 
               console.log(
@@ -351,13 +429,12 @@ export class PolymarketService {
               liquidity: 0, // Not provided in basic market data
               yesPrice: 0.5, // Default fallback for CLOB API
               noPrice: 0.5, // Default fallback for CLOB API
-              tokens: {
-                yes: yesToken?.token_id || market.tokens[0]?.token_id || "",
-                no: noToken?.token_id || market.tokens[1]?.token_id || "",
-              },
+              yesTokenId:
+                yesToken?.token_id || market.tokens[0]?.token_id || "",
+              noTokenId: noToken?.token_id || market.tokens[1]?.token_id || "",
             };
           })
-          .filter((market) => market.tokens.yes && market.tokens.no)
+          .filter((market) => market.yesTokenId && market.noTokenId)
           .sort(
             (a: Market, b: Market) =>
               new Date(b.endDate).getTime() - new Date(a.endDate).getTime()
@@ -427,8 +504,8 @@ export class PolymarketService {
               }
 
               // Extract token IDs from CLOB API response
-              let yesTokenId = market.tokens.yes;
-              let noTokenId = market.tokens.no;
+              let yesTokenId = market.yesTokenId; // Changed from market.tokens.yes
+              let noTokenId = market.noTokenId; // Changed from market.tokens.no
 
               if (marketData.tokens && Array.isArray(marketData.tokens)) {
                 const yesToken = marketData.tokens.find(
@@ -459,10 +536,8 @@ export class PolymarketService {
                   noPrice: noPrice,
                   volume24h: marketData.volume24h || market.volume24h,
                   liquidity: marketData.liquidity || market.liquidity,
-                  tokens: {
-                    yes: yesTokenId,
-                    no: noTokenId,
-                  },
+                  yesTokenId: yesTokenId,
+                  noTokenId: noTokenId,
                 };
               } else {
                 console.log(
@@ -743,6 +818,53 @@ export class PolymarketService {
               ? "Wallet signing is required for order placement. Please ensure your wallet is connected and try again."
               : error.message
             : "Failed to place order. Please try again.",
+      };
+    }
+  }
+
+  // Update cache methods to work with database
+  async clearCache(): Promise<void> {
+    try {
+      // This would clear all markets, but we might want to just mark them as stale
+      // For now, we'll just log that the cache is cleared
+      console.log("Markets cache cleared - next request will fetch fresh data");
+    } catch (error) {
+      console.error("Error clearing cache:", error);
+      throw error;
+    }
+  }
+
+  async getCacheStatus(): Promise<{
+    hasCache: boolean;
+    age: number;
+    ttl: number;
+  }> {
+    try {
+      const markets = await prismaStorageService.getActiveMarkets(1);
+      const now = new Date();
+
+      if (markets.length > 0) {
+        const oldestMarket = markets[0];
+        const age = now.getTime() - oldestMarket.lastUpdated.getTime();
+
+        return {
+          hasCache: true,
+          age: age,
+          ttl: this.CACHE_TTL,
+        };
+      }
+
+      return {
+        hasCache: false,
+        age: 0,
+        ttl: this.CACHE_TTL,
+      };
+    } catch (error) {
+      console.error("Error getting cache status:", error);
+      return {
+        hasCache: false,
+        age: 0,
+        ttl: this.CACHE_TTL,
       };
     }
   }

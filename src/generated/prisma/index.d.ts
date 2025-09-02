@@ -24,6 +24,11 @@ export type User = $Result.DefaultSelection<Prisma.$UserPayload>
  */
 export type Wallet = $Result.DefaultSelection<Prisma.$WalletPayload>
 /**
+ * Model Market
+ * 
+ */
+export type Market = $Result.DefaultSelection<Prisma.$MarketPayload>
+/**
  * Model Position
  * 
  */
@@ -181,6 +186,16 @@ export class PrismaClient<
     * ```
     */
   get wallet(): Prisma.WalletDelegate<ExtArgs>;
+
+  /**
+   * `prisma.market`: Exposes CRUD operations for the **Market** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more Markets
+    * const markets = await prisma.market.findMany()
+    * ```
+    */
+  get market(): Prisma.MarketDelegate<ExtArgs>;
 
   /**
    * `prisma.position`: Exposes CRUD operations for the **Position** model.
@@ -654,6 +669,7 @@ export namespace Prisma {
   export const ModelName: {
     User: 'User',
     Wallet: 'Wallet',
+    Market: 'Market',
     Position: 'Position',
     Transfer: 'Transfer',
     Balance: 'Balance'
@@ -672,7 +688,7 @@ export namespace Prisma {
 
   export type TypeMap<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, ClientOptions = {}> = {
     meta: {
-      modelProps: "user" | "wallet" | "position" | "transfer" | "balance"
+      modelProps: "user" | "wallet" | "market" | "position" | "transfer" | "balance"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -813,6 +829,76 @@ export namespace Prisma {
           count: {
             args: Prisma.WalletCountArgs<ExtArgs>
             result: $Utils.Optional<WalletCountAggregateOutputType> | number
+          }
+        }
+      }
+      Market: {
+        payload: Prisma.$MarketPayload<ExtArgs>
+        fields: Prisma.MarketFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.MarketFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MarketPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.MarketFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MarketPayload>
+          }
+          findFirst: {
+            args: Prisma.MarketFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MarketPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.MarketFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MarketPayload>
+          }
+          findMany: {
+            args: Prisma.MarketFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MarketPayload>[]
+          }
+          create: {
+            args: Prisma.MarketCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MarketPayload>
+          }
+          createMany: {
+            args: Prisma.MarketCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.MarketCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MarketPayload>[]
+          }
+          delete: {
+            args: Prisma.MarketDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MarketPayload>
+          }
+          update: {
+            args: Prisma.MarketUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MarketPayload>
+          }
+          deleteMany: {
+            args: Prisma.MarketDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.MarketUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.MarketUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MarketPayload>
+          }
+          aggregate: {
+            args: Prisma.MarketAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateMarket>
+          }
+          groupBy: {
+            args: Prisma.MarketGroupByArgs<ExtArgs>
+            result: $Utils.Optional<MarketGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.MarketCountArgs<ExtArgs>
+            result: $Utils.Optional<MarketCountAggregateOutputType> | number
           }
         }
       }
@@ -1232,6 +1318,37 @@ export namespace Prisma {
    */
   export type UserCountOutputTypeCountBalancesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: BalanceWhereInput
+  }
+
+
+  /**
+   * Count Type MarketCountOutputType
+   */
+
+  export type MarketCountOutputType = {
+    positions: number
+  }
+
+  export type MarketCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    positions?: boolean | MarketCountOutputTypeCountPositionsArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * MarketCountOutputType without action
+   */
+  export type MarketCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MarketCountOutputType
+     */
+    select?: MarketCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * MarketCountOutputType without action
+   */
+  export type MarketCountOutputTypeCountPositionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: PositionWhereInput
   }
 
 
@@ -3260,6 +3377,1136 @@ export namespace Prisma {
 
 
   /**
+   * Model Market
+   */
+
+  export type AggregateMarket = {
+    _count: MarketCountAggregateOutputType | null
+    _avg: MarketAvgAggregateOutputType | null
+    _sum: MarketSumAggregateOutputType | null
+    _min: MarketMinAggregateOutputType | null
+    _max: MarketMaxAggregateOutputType | null
+  }
+
+  export type MarketAvgAggregateOutputType = {
+    volume24h: number | null
+    liquidity: number | null
+    yesPrice: number | null
+    noPrice: number | null
+    priceChange24h: number | null
+  }
+
+  export type MarketSumAggregateOutputType = {
+    volume24h: number | null
+    liquidity: number | null
+    yesPrice: number | null
+    noPrice: number | null
+    priceChange24h: number | null
+  }
+
+  export type MarketMinAggregateOutputType = {
+    id: string | null
+    polymarketId: string | null
+    question: string | null
+    description: string | null
+    endDate: Date | null
+    volume24h: number | null
+    liquidity: number | null
+    yesPrice: number | null
+    noPrice: number | null
+    priceChange24h: number | null
+    yesTokenId: string | null
+    noTokenId: string | null
+    isActive: boolean | null
+    isArchived: boolean | null
+    lastUpdated: Date | null
+    createdAt: Date | null
+  }
+
+  export type MarketMaxAggregateOutputType = {
+    id: string | null
+    polymarketId: string | null
+    question: string | null
+    description: string | null
+    endDate: Date | null
+    volume24h: number | null
+    liquidity: number | null
+    yesPrice: number | null
+    noPrice: number | null
+    priceChange24h: number | null
+    yesTokenId: string | null
+    noTokenId: string | null
+    isActive: boolean | null
+    isArchived: boolean | null
+    lastUpdated: Date | null
+    createdAt: Date | null
+  }
+
+  export type MarketCountAggregateOutputType = {
+    id: number
+    polymarketId: number
+    question: number
+    description: number
+    endDate: number
+    volume24h: number
+    liquidity: number
+    yesPrice: number
+    noPrice: number
+    priceChange24h: number
+    yesTokenId: number
+    noTokenId: number
+    isActive: number
+    isArchived: number
+    lastUpdated: number
+    createdAt: number
+    _all: number
+  }
+
+
+  export type MarketAvgAggregateInputType = {
+    volume24h?: true
+    liquidity?: true
+    yesPrice?: true
+    noPrice?: true
+    priceChange24h?: true
+  }
+
+  export type MarketSumAggregateInputType = {
+    volume24h?: true
+    liquidity?: true
+    yesPrice?: true
+    noPrice?: true
+    priceChange24h?: true
+  }
+
+  export type MarketMinAggregateInputType = {
+    id?: true
+    polymarketId?: true
+    question?: true
+    description?: true
+    endDate?: true
+    volume24h?: true
+    liquidity?: true
+    yesPrice?: true
+    noPrice?: true
+    priceChange24h?: true
+    yesTokenId?: true
+    noTokenId?: true
+    isActive?: true
+    isArchived?: true
+    lastUpdated?: true
+    createdAt?: true
+  }
+
+  export type MarketMaxAggregateInputType = {
+    id?: true
+    polymarketId?: true
+    question?: true
+    description?: true
+    endDate?: true
+    volume24h?: true
+    liquidity?: true
+    yesPrice?: true
+    noPrice?: true
+    priceChange24h?: true
+    yesTokenId?: true
+    noTokenId?: true
+    isActive?: true
+    isArchived?: true
+    lastUpdated?: true
+    createdAt?: true
+  }
+
+  export type MarketCountAggregateInputType = {
+    id?: true
+    polymarketId?: true
+    question?: true
+    description?: true
+    endDate?: true
+    volume24h?: true
+    liquidity?: true
+    yesPrice?: true
+    noPrice?: true
+    priceChange24h?: true
+    yesTokenId?: true
+    noTokenId?: true
+    isActive?: true
+    isArchived?: true
+    lastUpdated?: true
+    createdAt?: true
+    _all?: true
+  }
+
+  export type MarketAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Market to aggregate.
+     */
+    where?: MarketWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Markets to fetch.
+     */
+    orderBy?: MarketOrderByWithRelationInput | MarketOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: MarketWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Markets from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Markets.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned Markets
+    **/
+    _count?: true | MarketCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: MarketAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: MarketSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: MarketMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: MarketMaxAggregateInputType
+  }
+
+  export type GetMarketAggregateType<T extends MarketAggregateArgs> = {
+        [P in keyof T & keyof AggregateMarket]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateMarket[P]>
+      : GetScalarType<T[P], AggregateMarket[P]>
+  }
+
+
+
+
+  export type MarketGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: MarketWhereInput
+    orderBy?: MarketOrderByWithAggregationInput | MarketOrderByWithAggregationInput[]
+    by: MarketScalarFieldEnum[] | MarketScalarFieldEnum
+    having?: MarketScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: MarketCountAggregateInputType | true
+    _avg?: MarketAvgAggregateInputType
+    _sum?: MarketSumAggregateInputType
+    _min?: MarketMinAggregateInputType
+    _max?: MarketMaxAggregateInputType
+  }
+
+  export type MarketGroupByOutputType = {
+    id: string
+    polymarketId: string
+    question: string
+    description: string | null
+    endDate: Date
+    volume24h: number
+    liquidity: number
+    yesPrice: number
+    noPrice: number
+    priceChange24h: number | null
+    yesTokenId: string
+    noTokenId: string
+    isActive: boolean
+    isArchived: boolean
+    lastUpdated: Date
+    createdAt: Date
+    _count: MarketCountAggregateOutputType | null
+    _avg: MarketAvgAggregateOutputType | null
+    _sum: MarketSumAggregateOutputType | null
+    _min: MarketMinAggregateOutputType | null
+    _max: MarketMaxAggregateOutputType | null
+  }
+
+  type GetMarketGroupByPayload<T extends MarketGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<MarketGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof MarketGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], MarketGroupByOutputType[P]>
+            : GetScalarType<T[P], MarketGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type MarketSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    polymarketId?: boolean
+    question?: boolean
+    description?: boolean
+    endDate?: boolean
+    volume24h?: boolean
+    liquidity?: boolean
+    yesPrice?: boolean
+    noPrice?: boolean
+    priceChange24h?: boolean
+    yesTokenId?: boolean
+    noTokenId?: boolean
+    isActive?: boolean
+    isArchived?: boolean
+    lastUpdated?: boolean
+    createdAt?: boolean
+    positions?: boolean | Market$positionsArgs<ExtArgs>
+    _count?: boolean | MarketCountOutputTypeDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["market"]>
+
+  export type MarketSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    polymarketId?: boolean
+    question?: boolean
+    description?: boolean
+    endDate?: boolean
+    volume24h?: boolean
+    liquidity?: boolean
+    yesPrice?: boolean
+    noPrice?: boolean
+    priceChange24h?: boolean
+    yesTokenId?: boolean
+    noTokenId?: boolean
+    isActive?: boolean
+    isArchived?: boolean
+    lastUpdated?: boolean
+    createdAt?: boolean
+  }, ExtArgs["result"]["market"]>
+
+  export type MarketSelectScalar = {
+    id?: boolean
+    polymarketId?: boolean
+    question?: boolean
+    description?: boolean
+    endDate?: boolean
+    volume24h?: boolean
+    liquidity?: boolean
+    yesPrice?: boolean
+    noPrice?: boolean
+    priceChange24h?: boolean
+    yesTokenId?: boolean
+    noTokenId?: boolean
+    isActive?: boolean
+    isArchived?: boolean
+    lastUpdated?: boolean
+    createdAt?: boolean
+  }
+
+  export type MarketInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    positions?: boolean | Market$positionsArgs<ExtArgs>
+    _count?: boolean | MarketCountOutputTypeDefaultArgs<ExtArgs>
+  }
+  export type MarketIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
+
+  export type $MarketPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "Market"
+    objects: {
+      positions: Prisma.$PositionPayload<ExtArgs>[]
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      polymarketId: string
+      question: string
+      description: string | null
+      endDate: Date
+      volume24h: number
+      liquidity: number
+      yesPrice: number
+      noPrice: number
+      priceChange24h: number | null
+      yesTokenId: string
+      noTokenId: string
+      isActive: boolean
+      isArchived: boolean
+      lastUpdated: Date
+      createdAt: Date
+    }, ExtArgs["result"]["market"]>
+    composites: {}
+  }
+
+  type MarketGetPayload<S extends boolean | null | undefined | MarketDefaultArgs> = $Result.GetResult<Prisma.$MarketPayload, S>
+
+  type MarketCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
+    Omit<MarketFindManyArgs, 'select' | 'include' | 'distinct'> & {
+      select?: MarketCountAggregateInputType | true
+    }
+
+  export interface MarketDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['Market'], meta: { name: 'Market' } }
+    /**
+     * Find zero or one Market that matches the filter.
+     * @param {MarketFindUniqueArgs} args - Arguments to find a Market
+     * @example
+     * // Get one Market
+     * const market = await prisma.market.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends MarketFindUniqueArgs>(args: SelectSubset<T, MarketFindUniqueArgs<ExtArgs>>): Prisma__MarketClient<$Result.GetResult<Prisma.$MarketPayload<ExtArgs>, T, "findUnique"> | null, null, ExtArgs>
+
+    /**
+     * Find one Market that matches the filter or throw an error with `error.code='P2025'` 
+     * if no matches were found.
+     * @param {MarketFindUniqueOrThrowArgs} args - Arguments to find a Market
+     * @example
+     * // Get one Market
+     * const market = await prisma.market.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends MarketFindUniqueOrThrowArgs>(args: SelectSubset<T, MarketFindUniqueOrThrowArgs<ExtArgs>>): Prisma__MarketClient<$Result.GetResult<Prisma.$MarketPayload<ExtArgs>, T, "findUniqueOrThrow">, never, ExtArgs>
+
+    /**
+     * Find the first Market that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MarketFindFirstArgs} args - Arguments to find a Market
+     * @example
+     * // Get one Market
+     * const market = await prisma.market.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends MarketFindFirstArgs>(args?: SelectSubset<T, MarketFindFirstArgs<ExtArgs>>): Prisma__MarketClient<$Result.GetResult<Prisma.$MarketPayload<ExtArgs>, T, "findFirst"> | null, null, ExtArgs>
+
+    /**
+     * Find the first Market that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MarketFindFirstOrThrowArgs} args - Arguments to find a Market
+     * @example
+     * // Get one Market
+     * const market = await prisma.market.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends MarketFindFirstOrThrowArgs>(args?: SelectSubset<T, MarketFindFirstOrThrowArgs<ExtArgs>>): Prisma__MarketClient<$Result.GetResult<Prisma.$MarketPayload<ExtArgs>, T, "findFirstOrThrow">, never, ExtArgs>
+
+    /**
+     * Find zero or more Markets that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MarketFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all Markets
+     * const markets = await prisma.market.findMany()
+     * 
+     * // Get first 10 Markets
+     * const markets = await prisma.market.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const marketWithIdOnly = await prisma.market.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends MarketFindManyArgs>(args?: SelectSubset<T, MarketFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MarketPayload<ExtArgs>, T, "findMany">>
+
+    /**
+     * Create a Market.
+     * @param {MarketCreateArgs} args - Arguments to create a Market.
+     * @example
+     * // Create one Market
+     * const Market = await prisma.market.create({
+     *   data: {
+     *     // ... data to create a Market
+     *   }
+     * })
+     * 
+     */
+    create<T extends MarketCreateArgs>(args: SelectSubset<T, MarketCreateArgs<ExtArgs>>): Prisma__MarketClient<$Result.GetResult<Prisma.$MarketPayload<ExtArgs>, T, "create">, never, ExtArgs>
+
+    /**
+     * Create many Markets.
+     * @param {MarketCreateManyArgs} args - Arguments to create many Markets.
+     * @example
+     * // Create many Markets
+     * const market = await prisma.market.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends MarketCreateManyArgs>(args?: SelectSubset<T, MarketCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many Markets and returns the data saved in the database.
+     * @param {MarketCreateManyAndReturnArgs} args - Arguments to create many Markets.
+     * @example
+     * // Create many Markets
+     * const market = await prisma.market.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many Markets and only return the `id`
+     * const marketWithIdOnly = await prisma.market.createManyAndReturn({ 
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends MarketCreateManyAndReturnArgs>(args?: SelectSubset<T, MarketCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MarketPayload<ExtArgs>, T, "createManyAndReturn">>
+
+    /**
+     * Delete a Market.
+     * @param {MarketDeleteArgs} args - Arguments to delete one Market.
+     * @example
+     * // Delete one Market
+     * const Market = await prisma.market.delete({
+     *   where: {
+     *     // ... filter to delete one Market
+     *   }
+     * })
+     * 
+     */
+    delete<T extends MarketDeleteArgs>(args: SelectSubset<T, MarketDeleteArgs<ExtArgs>>): Prisma__MarketClient<$Result.GetResult<Prisma.$MarketPayload<ExtArgs>, T, "delete">, never, ExtArgs>
+
+    /**
+     * Update one Market.
+     * @param {MarketUpdateArgs} args - Arguments to update one Market.
+     * @example
+     * // Update one Market
+     * const market = await prisma.market.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends MarketUpdateArgs>(args: SelectSubset<T, MarketUpdateArgs<ExtArgs>>): Prisma__MarketClient<$Result.GetResult<Prisma.$MarketPayload<ExtArgs>, T, "update">, never, ExtArgs>
+
+    /**
+     * Delete zero or more Markets.
+     * @param {MarketDeleteManyArgs} args - Arguments to filter Markets to delete.
+     * @example
+     * // Delete a few Markets
+     * const { count } = await prisma.market.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends MarketDeleteManyArgs>(args?: SelectSubset<T, MarketDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Markets.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MarketUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many Markets
+     * const market = await prisma.market.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends MarketUpdateManyArgs>(args: SelectSubset<T, MarketUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one Market.
+     * @param {MarketUpsertArgs} args - Arguments to update or create a Market.
+     * @example
+     * // Update or create a Market
+     * const market = await prisma.market.upsert({
+     *   create: {
+     *     // ... data to create a Market
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the Market we want to update
+     *   }
+     * })
+     */
+    upsert<T extends MarketUpsertArgs>(args: SelectSubset<T, MarketUpsertArgs<ExtArgs>>): Prisma__MarketClient<$Result.GetResult<Prisma.$MarketPayload<ExtArgs>, T, "upsert">, never, ExtArgs>
+
+
+    /**
+     * Count the number of Markets.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MarketCountArgs} args - Arguments to filter Markets to count.
+     * @example
+     * // Count the number of Markets
+     * const count = await prisma.market.count({
+     *   where: {
+     *     // ... the filter for the Markets we want to count
+     *   }
+     * })
+    **/
+    count<T extends MarketCountArgs>(
+      args?: Subset<T, MarketCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], MarketCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a Market.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MarketAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends MarketAggregateArgs>(args: Subset<T, MarketAggregateArgs>): Prisma.PrismaPromise<GetMarketAggregateType<T>>
+
+    /**
+     * Group by Market.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MarketGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends MarketGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: MarketGroupByArgs['orderBy'] }
+        : { orderBy?: MarketGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, MarketGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetMarketGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the Market model
+   */
+  readonly fields: MarketFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for Market.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__MarketClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    positions<T extends Market$positionsArgs<ExtArgs> = {}>(args?: Subset<T, Market$positionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PositionPayload<ExtArgs>, T, "findMany"> | Null>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the Market model
+   */ 
+  interface MarketFieldRefs {
+    readonly id: FieldRef<"Market", 'String'>
+    readonly polymarketId: FieldRef<"Market", 'String'>
+    readonly question: FieldRef<"Market", 'String'>
+    readonly description: FieldRef<"Market", 'String'>
+    readonly endDate: FieldRef<"Market", 'DateTime'>
+    readonly volume24h: FieldRef<"Market", 'Float'>
+    readonly liquidity: FieldRef<"Market", 'Float'>
+    readonly yesPrice: FieldRef<"Market", 'Float'>
+    readonly noPrice: FieldRef<"Market", 'Float'>
+    readonly priceChange24h: FieldRef<"Market", 'Float'>
+    readonly yesTokenId: FieldRef<"Market", 'String'>
+    readonly noTokenId: FieldRef<"Market", 'String'>
+    readonly isActive: FieldRef<"Market", 'Boolean'>
+    readonly isArchived: FieldRef<"Market", 'Boolean'>
+    readonly lastUpdated: FieldRef<"Market", 'DateTime'>
+    readonly createdAt: FieldRef<"Market", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * Market findUnique
+   */
+  export type MarketFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Market
+     */
+    select?: MarketSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MarketInclude<ExtArgs> | null
+    /**
+     * Filter, which Market to fetch.
+     */
+    where: MarketWhereUniqueInput
+  }
+
+  /**
+   * Market findUniqueOrThrow
+   */
+  export type MarketFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Market
+     */
+    select?: MarketSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MarketInclude<ExtArgs> | null
+    /**
+     * Filter, which Market to fetch.
+     */
+    where: MarketWhereUniqueInput
+  }
+
+  /**
+   * Market findFirst
+   */
+  export type MarketFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Market
+     */
+    select?: MarketSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MarketInclude<ExtArgs> | null
+    /**
+     * Filter, which Market to fetch.
+     */
+    where?: MarketWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Markets to fetch.
+     */
+    orderBy?: MarketOrderByWithRelationInput | MarketOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Markets.
+     */
+    cursor?: MarketWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Markets from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Markets.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Markets.
+     */
+    distinct?: MarketScalarFieldEnum | MarketScalarFieldEnum[]
+  }
+
+  /**
+   * Market findFirstOrThrow
+   */
+  export type MarketFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Market
+     */
+    select?: MarketSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MarketInclude<ExtArgs> | null
+    /**
+     * Filter, which Market to fetch.
+     */
+    where?: MarketWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Markets to fetch.
+     */
+    orderBy?: MarketOrderByWithRelationInput | MarketOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Markets.
+     */
+    cursor?: MarketWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Markets from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Markets.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Markets.
+     */
+    distinct?: MarketScalarFieldEnum | MarketScalarFieldEnum[]
+  }
+
+  /**
+   * Market findMany
+   */
+  export type MarketFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Market
+     */
+    select?: MarketSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MarketInclude<ExtArgs> | null
+    /**
+     * Filter, which Markets to fetch.
+     */
+    where?: MarketWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Markets to fetch.
+     */
+    orderBy?: MarketOrderByWithRelationInput | MarketOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing Markets.
+     */
+    cursor?: MarketWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Markets from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Markets.
+     */
+    skip?: number
+    distinct?: MarketScalarFieldEnum | MarketScalarFieldEnum[]
+  }
+
+  /**
+   * Market create
+   */
+  export type MarketCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Market
+     */
+    select?: MarketSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MarketInclude<ExtArgs> | null
+    /**
+     * The data needed to create a Market.
+     */
+    data: XOR<MarketCreateInput, MarketUncheckedCreateInput>
+  }
+
+  /**
+   * Market createMany
+   */
+  export type MarketCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many Markets.
+     */
+    data: MarketCreateManyInput | MarketCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * Market createManyAndReturn
+   */
+  export type MarketCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Market
+     */
+    select?: MarketSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * The data used to create many Markets.
+     */
+    data: MarketCreateManyInput | MarketCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * Market update
+   */
+  export type MarketUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Market
+     */
+    select?: MarketSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MarketInclude<ExtArgs> | null
+    /**
+     * The data needed to update a Market.
+     */
+    data: XOR<MarketUpdateInput, MarketUncheckedUpdateInput>
+    /**
+     * Choose, which Market to update.
+     */
+    where: MarketWhereUniqueInput
+  }
+
+  /**
+   * Market updateMany
+   */
+  export type MarketUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update Markets.
+     */
+    data: XOR<MarketUpdateManyMutationInput, MarketUncheckedUpdateManyInput>
+    /**
+     * Filter which Markets to update
+     */
+    where?: MarketWhereInput
+  }
+
+  /**
+   * Market upsert
+   */
+  export type MarketUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Market
+     */
+    select?: MarketSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MarketInclude<ExtArgs> | null
+    /**
+     * The filter to search for the Market to update in case it exists.
+     */
+    where: MarketWhereUniqueInput
+    /**
+     * In case the Market found by the `where` argument doesn't exist, create a new Market with this data.
+     */
+    create: XOR<MarketCreateInput, MarketUncheckedCreateInput>
+    /**
+     * In case the Market was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<MarketUpdateInput, MarketUncheckedUpdateInput>
+  }
+
+  /**
+   * Market delete
+   */
+  export type MarketDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Market
+     */
+    select?: MarketSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MarketInclude<ExtArgs> | null
+    /**
+     * Filter which Market to delete.
+     */
+    where: MarketWhereUniqueInput
+  }
+
+  /**
+   * Market deleteMany
+   */
+  export type MarketDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Markets to delete
+     */
+    where?: MarketWhereInput
+  }
+
+  /**
+   * Market.positions
+   */
+  export type Market$positionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Position
+     */
+    select?: PositionSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PositionInclude<ExtArgs> | null
+    where?: PositionWhereInput
+    orderBy?: PositionOrderByWithRelationInput | PositionOrderByWithRelationInput[]
+    cursor?: PositionWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: PositionScalarFieldEnum | PositionScalarFieldEnum[]
+  }
+
+  /**
+   * Market without action
+   */
+  export type MarketDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Market
+     */
+    select?: MarketSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MarketInclude<ExtArgs> | null
+  }
+
+
+  /**
    * Model Position
    */
 
@@ -3494,6 +4741,7 @@ export namespace Prisma {
     createdAt?: boolean
     updatedAt?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
+    market?: boolean | MarketDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["position"]>
 
   export type PositionSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -3507,6 +4755,7 @@ export namespace Prisma {
     createdAt?: boolean
     updatedAt?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
+    market?: boolean | MarketDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["position"]>
 
   export type PositionSelectScalar = {
@@ -3523,15 +4772,18 @@ export namespace Prisma {
 
   export type PositionInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
+    market?: boolean | MarketDefaultArgs<ExtArgs>
   }
   export type PositionIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
+    market?: boolean | MarketDefaultArgs<ExtArgs>
   }
 
   export type $PositionPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Position"
     objects: {
       user: Prisma.$UserPayload<ExtArgs>
+      market: Prisma.$MarketPayload<ExtArgs>
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -3908,6 +5160,7 @@ export namespace Prisma {
   export interface Prisma__PositionClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    market<T extends MarketDefaultArgs<ExtArgs> = {}>(args?: Subset<T, MarketDefaultArgs<ExtArgs>>): Prisma__MarketClient<$Result.GetResult<Prisma.$MarketPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -6304,6 +7557,28 @@ export namespace Prisma {
   export type WalletScalarFieldEnum = (typeof WalletScalarFieldEnum)[keyof typeof WalletScalarFieldEnum]
 
 
+  export const MarketScalarFieldEnum: {
+    id: 'id',
+    polymarketId: 'polymarketId',
+    question: 'question',
+    description: 'description',
+    endDate: 'endDate',
+    volume24h: 'volume24h',
+    liquidity: 'liquidity',
+    yesPrice: 'yesPrice',
+    noPrice: 'noPrice',
+    priceChange24h: 'priceChange24h',
+    yesTokenId: 'yesTokenId',
+    noTokenId: 'noTokenId',
+    isActive: 'isActive',
+    isArchived: 'isArchived',
+    lastUpdated: 'lastUpdated',
+    createdAt: 'createdAt'
+  };
+
+  export type MarketScalarFieldEnum = (typeof MarketScalarFieldEnum)[keyof typeof MarketScalarFieldEnum]
+
+
   export const PositionScalarFieldEnum: {
     id: 'id',
     userId: 'userId',
@@ -6416,6 +7691,13 @@ export namespace Prisma {
    * Reference to a field of type 'Float[]'
    */
   export type ListFloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'Boolean'
+   */
+  export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
     
 
 
@@ -6585,6 +7867,118 @@ export namespace Prisma {
     lastUsed?: DateTimeWithAggregatesFilter<"Wallet"> | Date | string
   }
 
+  export type MarketWhereInput = {
+    AND?: MarketWhereInput | MarketWhereInput[]
+    OR?: MarketWhereInput[]
+    NOT?: MarketWhereInput | MarketWhereInput[]
+    id?: StringFilter<"Market"> | string
+    polymarketId?: StringFilter<"Market"> | string
+    question?: StringFilter<"Market"> | string
+    description?: StringNullableFilter<"Market"> | string | null
+    endDate?: DateTimeFilter<"Market"> | Date | string
+    volume24h?: FloatFilter<"Market"> | number
+    liquidity?: FloatFilter<"Market"> | number
+    yesPrice?: FloatFilter<"Market"> | number
+    noPrice?: FloatFilter<"Market"> | number
+    priceChange24h?: FloatNullableFilter<"Market"> | number | null
+    yesTokenId?: StringFilter<"Market"> | string
+    noTokenId?: StringFilter<"Market"> | string
+    isActive?: BoolFilter<"Market"> | boolean
+    isArchived?: BoolFilter<"Market"> | boolean
+    lastUpdated?: DateTimeFilter<"Market"> | Date | string
+    createdAt?: DateTimeFilter<"Market"> | Date | string
+    positions?: PositionListRelationFilter
+  }
+
+  export type MarketOrderByWithRelationInput = {
+    id?: SortOrder
+    polymarketId?: SortOrder
+    question?: SortOrder
+    description?: SortOrderInput | SortOrder
+    endDate?: SortOrder
+    volume24h?: SortOrder
+    liquidity?: SortOrder
+    yesPrice?: SortOrder
+    noPrice?: SortOrder
+    priceChange24h?: SortOrderInput | SortOrder
+    yesTokenId?: SortOrder
+    noTokenId?: SortOrder
+    isActive?: SortOrder
+    isArchived?: SortOrder
+    lastUpdated?: SortOrder
+    createdAt?: SortOrder
+    positions?: PositionOrderByRelationAggregateInput
+  }
+
+  export type MarketWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    polymarketId?: string
+    AND?: MarketWhereInput | MarketWhereInput[]
+    OR?: MarketWhereInput[]
+    NOT?: MarketWhereInput | MarketWhereInput[]
+    question?: StringFilter<"Market"> | string
+    description?: StringNullableFilter<"Market"> | string | null
+    endDate?: DateTimeFilter<"Market"> | Date | string
+    volume24h?: FloatFilter<"Market"> | number
+    liquidity?: FloatFilter<"Market"> | number
+    yesPrice?: FloatFilter<"Market"> | number
+    noPrice?: FloatFilter<"Market"> | number
+    priceChange24h?: FloatNullableFilter<"Market"> | number | null
+    yesTokenId?: StringFilter<"Market"> | string
+    noTokenId?: StringFilter<"Market"> | string
+    isActive?: BoolFilter<"Market"> | boolean
+    isArchived?: BoolFilter<"Market"> | boolean
+    lastUpdated?: DateTimeFilter<"Market"> | Date | string
+    createdAt?: DateTimeFilter<"Market"> | Date | string
+    positions?: PositionListRelationFilter
+  }, "id" | "polymarketId">
+
+  export type MarketOrderByWithAggregationInput = {
+    id?: SortOrder
+    polymarketId?: SortOrder
+    question?: SortOrder
+    description?: SortOrderInput | SortOrder
+    endDate?: SortOrder
+    volume24h?: SortOrder
+    liquidity?: SortOrder
+    yesPrice?: SortOrder
+    noPrice?: SortOrder
+    priceChange24h?: SortOrderInput | SortOrder
+    yesTokenId?: SortOrder
+    noTokenId?: SortOrder
+    isActive?: SortOrder
+    isArchived?: SortOrder
+    lastUpdated?: SortOrder
+    createdAt?: SortOrder
+    _count?: MarketCountOrderByAggregateInput
+    _avg?: MarketAvgOrderByAggregateInput
+    _max?: MarketMaxOrderByAggregateInput
+    _min?: MarketMinOrderByAggregateInput
+    _sum?: MarketSumOrderByAggregateInput
+  }
+
+  export type MarketScalarWhereWithAggregatesInput = {
+    AND?: MarketScalarWhereWithAggregatesInput | MarketScalarWhereWithAggregatesInput[]
+    OR?: MarketScalarWhereWithAggregatesInput[]
+    NOT?: MarketScalarWhereWithAggregatesInput | MarketScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"Market"> | string
+    polymarketId?: StringWithAggregatesFilter<"Market"> | string
+    question?: StringWithAggregatesFilter<"Market"> | string
+    description?: StringNullableWithAggregatesFilter<"Market"> | string | null
+    endDate?: DateTimeWithAggregatesFilter<"Market"> | Date | string
+    volume24h?: FloatWithAggregatesFilter<"Market"> | number
+    liquidity?: FloatWithAggregatesFilter<"Market"> | number
+    yesPrice?: FloatWithAggregatesFilter<"Market"> | number
+    noPrice?: FloatWithAggregatesFilter<"Market"> | number
+    priceChange24h?: FloatNullableWithAggregatesFilter<"Market"> | number | null
+    yesTokenId?: StringWithAggregatesFilter<"Market"> | string
+    noTokenId?: StringWithAggregatesFilter<"Market"> | string
+    isActive?: BoolWithAggregatesFilter<"Market"> | boolean
+    isArchived?: BoolWithAggregatesFilter<"Market"> | boolean
+    lastUpdated?: DateTimeWithAggregatesFilter<"Market"> | Date | string
+    createdAt?: DateTimeWithAggregatesFilter<"Market"> | Date | string
+  }
+
   export type PositionWhereInput = {
     AND?: PositionWhereInput | PositionWhereInput[]
     OR?: PositionWhereInput[]
@@ -6599,6 +7993,7 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"Position"> | Date | string
     updatedAt?: DateTimeFilter<"Position"> | Date | string
     user?: XOR<UserRelationFilter, UserWhereInput>
+    market?: XOR<MarketRelationFilter, MarketWhereInput>
   }
 
   export type PositionOrderByWithRelationInput = {
@@ -6612,6 +8007,7 @@ export namespace Prisma {
     createdAt?: SortOrder
     updatedAt?: SortOrder
     user?: UserOrderByWithRelationInput
+    market?: MarketOrderByWithRelationInput
   }
 
   export type PositionWhereUniqueInput = Prisma.AtLeast<{
@@ -6628,6 +8024,7 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"Position"> | Date | string
     updatedAt?: DateTimeFilter<"Position"> | Date | string
     user?: XOR<UserRelationFilter, UserWhereInput>
+    market?: XOR<MarketRelationFilter, MarketWhereInput>
   }, "id">
 
   export type PositionOrderByWithAggregationInput = {
@@ -6978,9 +8375,145 @@ export namespace Prisma {
     lastUsed?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type MarketCreateInput = {
+    id?: string
+    polymarketId: string
+    question: string
+    description?: string | null
+    endDate: Date | string
+    volume24h?: number
+    liquidity?: number
+    yesPrice?: number
+    noPrice?: number
+    priceChange24h?: number | null
+    yesTokenId: string
+    noTokenId: string
+    isActive?: boolean
+    isArchived?: boolean
+    lastUpdated?: Date | string
+    createdAt?: Date | string
+    positions?: PositionCreateNestedManyWithoutMarketInput
+  }
+
+  export type MarketUncheckedCreateInput = {
+    id?: string
+    polymarketId: string
+    question: string
+    description?: string | null
+    endDate: Date | string
+    volume24h?: number
+    liquidity?: number
+    yesPrice?: number
+    noPrice?: number
+    priceChange24h?: number | null
+    yesTokenId: string
+    noTokenId: string
+    isActive?: boolean
+    isArchived?: boolean
+    lastUpdated?: Date | string
+    createdAt?: Date | string
+    positions?: PositionUncheckedCreateNestedManyWithoutMarketInput
+  }
+
+  export type MarketUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    polymarketId?: StringFieldUpdateOperationsInput | string
+    question?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    endDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    volume24h?: FloatFieldUpdateOperationsInput | number
+    liquidity?: FloatFieldUpdateOperationsInput | number
+    yesPrice?: FloatFieldUpdateOperationsInput | number
+    noPrice?: FloatFieldUpdateOperationsInput | number
+    priceChange24h?: NullableFloatFieldUpdateOperationsInput | number | null
+    yesTokenId?: StringFieldUpdateOperationsInput | string
+    noTokenId?: StringFieldUpdateOperationsInput | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isArchived?: BoolFieldUpdateOperationsInput | boolean
+    lastUpdated?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    positions?: PositionUpdateManyWithoutMarketNestedInput
+  }
+
+  export type MarketUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    polymarketId?: StringFieldUpdateOperationsInput | string
+    question?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    endDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    volume24h?: FloatFieldUpdateOperationsInput | number
+    liquidity?: FloatFieldUpdateOperationsInput | number
+    yesPrice?: FloatFieldUpdateOperationsInput | number
+    noPrice?: FloatFieldUpdateOperationsInput | number
+    priceChange24h?: NullableFloatFieldUpdateOperationsInput | number | null
+    yesTokenId?: StringFieldUpdateOperationsInput | string
+    noTokenId?: StringFieldUpdateOperationsInput | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isArchived?: BoolFieldUpdateOperationsInput | boolean
+    lastUpdated?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    positions?: PositionUncheckedUpdateManyWithoutMarketNestedInput
+  }
+
+  export type MarketCreateManyInput = {
+    id?: string
+    polymarketId: string
+    question: string
+    description?: string | null
+    endDate: Date | string
+    volume24h?: number
+    liquidity?: number
+    yesPrice?: number
+    noPrice?: number
+    priceChange24h?: number | null
+    yesTokenId: string
+    noTokenId: string
+    isActive?: boolean
+    isArchived?: boolean
+    lastUpdated?: Date | string
+    createdAt?: Date | string
+  }
+
+  export type MarketUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    polymarketId?: StringFieldUpdateOperationsInput | string
+    question?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    endDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    volume24h?: FloatFieldUpdateOperationsInput | number
+    liquidity?: FloatFieldUpdateOperationsInput | number
+    yesPrice?: FloatFieldUpdateOperationsInput | number
+    noPrice?: FloatFieldUpdateOperationsInput | number
+    priceChange24h?: NullableFloatFieldUpdateOperationsInput | number | null
+    yesTokenId?: StringFieldUpdateOperationsInput | string
+    noTokenId?: StringFieldUpdateOperationsInput | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isArchived?: BoolFieldUpdateOperationsInput | boolean
+    lastUpdated?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type MarketUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    polymarketId?: StringFieldUpdateOperationsInput | string
+    question?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    endDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    volume24h?: FloatFieldUpdateOperationsInput | number
+    liquidity?: FloatFieldUpdateOperationsInput | number
+    yesPrice?: FloatFieldUpdateOperationsInput | number
+    noPrice?: FloatFieldUpdateOperationsInput | number
+    priceChange24h?: NullableFloatFieldUpdateOperationsInput | number | null
+    yesTokenId?: StringFieldUpdateOperationsInput | string
+    noTokenId?: StringFieldUpdateOperationsInput | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isArchived?: BoolFieldUpdateOperationsInput | boolean
+    lastUpdated?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type PositionCreateInput = {
     id?: string
-    marketId: string
     tokenId: string
     amount: number
     side: string
@@ -6988,6 +8521,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     user: UserCreateNestedOneWithoutPositionsInput
+    market: MarketCreateNestedOneWithoutPositionsInput
   }
 
   export type PositionUncheckedCreateInput = {
@@ -7004,7 +8538,6 @@ export namespace Prisma {
 
   export type PositionUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
-    marketId?: StringFieldUpdateOperationsInput | string
     tokenId?: StringFieldUpdateOperationsInput | string
     amount?: FloatFieldUpdateOperationsInput | number
     side?: StringFieldUpdateOperationsInput | string
@@ -7012,6 +8545,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutPositionsNestedInput
+    market?: MarketUpdateOneRequiredWithoutPositionsNestedInput
   }
 
   export type PositionUncheckedUpdateInput = {
@@ -7040,7 +8574,6 @@ export namespace Prisma {
 
   export type PositionUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
-    marketId?: StringFieldUpdateOperationsInput | string
     tokenId?: StringFieldUpdateOperationsInput | string
     amount?: FloatFieldUpdateOperationsInput | number
     side?: StringFieldUpdateOperationsInput | string
@@ -7433,6 +8966,140 @@ export namespace Prisma {
     not?: NestedFloatFilter<$PrismaModel> | number
   }
 
+  export type FloatNullableFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatNullableFilter<$PrismaModel> | number | null
+  }
+
+  export type BoolFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolFilter<$PrismaModel> | boolean
+  }
+
+  export type MarketCountOrderByAggregateInput = {
+    id?: SortOrder
+    polymarketId?: SortOrder
+    question?: SortOrder
+    description?: SortOrder
+    endDate?: SortOrder
+    volume24h?: SortOrder
+    liquidity?: SortOrder
+    yesPrice?: SortOrder
+    noPrice?: SortOrder
+    priceChange24h?: SortOrder
+    yesTokenId?: SortOrder
+    noTokenId?: SortOrder
+    isActive?: SortOrder
+    isArchived?: SortOrder
+    lastUpdated?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type MarketAvgOrderByAggregateInput = {
+    volume24h?: SortOrder
+    liquidity?: SortOrder
+    yesPrice?: SortOrder
+    noPrice?: SortOrder
+    priceChange24h?: SortOrder
+  }
+
+  export type MarketMaxOrderByAggregateInput = {
+    id?: SortOrder
+    polymarketId?: SortOrder
+    question?: SortOrder
+    description?: SortOrder
+    endDate?: SortOrder
+    volume24h?: SortOrder
+    liquidity?: SortOrder
+    yesPrice?: SortOrder
+    noPrice?: SortOrder
+    priceChange24h?: SortOrder
+    yesTokenId?: SortOrder
+    noTokenId?: SortOrder
+    isActive?: SortOrder
+    isArchived?: SortOrder
+    lastUpdated?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type MarketMinOrderByAggregateInput = {
+    id?: SortOrder
+    polymarketId?: SortOrder
+    question?: SortOrder
+    description?: SortOrder
+    endDate?: SortOrder
+    volume24h?: SortOrder
+    liquidity?: SortOrder
+    yesPrice?: SortOrder
+    noPrice?: SortOrder
+    priceChange24h?: SortOrder
+    yesTokenId?: SortOrder
+    noTokenId?: SortOrder
+    isActive?: SortOrder
+    isArchived?: SortOrder
+    lastUpdated?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type MarketSumOrderByAggregateInput = {
+    volume24h?: SortOrder
+    liquidity?: SortOrder
+    yesPrice?: SortOrder
+    noPrice?: SortOrder
+    priceChange24h?: SortOrder
+  }
+
+  export type FloatWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel>
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel>
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatWithAggregatesFilter<$PrismaModel> | number
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedFloatFilter<$PrismaModel>
+    _sum?: NestedFloatFilter<$PrismaModel>
+    _min?: NestedFloatFilter<$PrismaModel>
+    _max?: NestedFloatFilter<$PrismaModel>
+  }
+
+  export type FloatNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatNullableWithAggregatesFilter<$PrismaModel> | number | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedFloatNullableFilter<$PrismaModel>
+    _sum?: NestedFloatNullableFilter<$PrismaModel>
+    _min?: NestedFloatNullableFilter<$PrismaModel>
+    _max?: NestedFloatNullableFilter<$PrismaModel>
+  }
+
+  export type BoolWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedBoolFilter<$PrismaModel>
+    _max?: NestedBoolFilter<$PrismaModel>
+  }
+
+  export type MarketRelationFilter = {
+    is?: MarketWhereInput
+    isNot?: MarketWhereInput
+  }
+
   export type PositionCountOrderByAggregateInput = {
     id?: SortOrder
     userId?: SortOrder
@@ -7477,22 +9144,6 @@ export namespace Prisma {
   export type PositionSumOrderByAggregateInput = {
     amount?: SortOrder
     price?: SortOrder
-  }
-
-  export type FloatWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: number | FloatFieldRefInput<$PrismaModel>
-    in?: number[] | ListFloatFieldRefInput<$PrismaModel>
-    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel>
-    lt?: number | FloatFieldRefInput<$PrismaModel>
-    lte?: number | FloatFieldRefInput<$PrismaModel>
-    gt?: number | FloatFieldRefInput<$PrismaModel>
-    gte?: number | FloatFieldRefInput<$PrismaModel>
-    not?: NestedFloatWithAggregatesFilter<$PrismaModel> | number
-    _count?: NestedIntFilter<$PrismaModel>
-    _avg?: NestedFloatFilter<$PrismaModel>
-    _sum?: NestedFloatFilter<$PrismaModel>
-    _min?: NestedFloatFilter<$PrismaModel>
-    _max?: NestedFloatFilter<$PrismaModel>
   }
 
   export type IntFilter<$PrismaModel = never> = {
@@ -7783,10 +9434,18 @@ export namespace Prisma {
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutWalletInput, UserUpdateWithoutWalletInput>, UserUncheckedUpdateWithoutWalletInput>
   }
 
-  export type UserCreateNestedOneWithoutPositionsInput = {
-    create?: XOR<UserCreateWithoutPositionsInput, UserUncheckedCreateWithoutPositionsInput>
-    connectOrCreate?: UserCreateOrConnectWithoutPositionsInput
-    connect?: UserWhereUniqueInput
+  export type PositionCreateNestedManyWithoutMarketInput = {
+    create?: XOR<PositionCreateWithoutMarketInput, PositionUncheckedCreateWithoutMarketInput> | PositionCreateWithoutMarketInput[] | PositionUncheckedCreateWithoutMarketInput[]
+    connectOrCreate?: PositionCreateOrConnectWithoutMarketInput | PositionCreateOrConnectWithoutMarketInput[]
+    createMany?: PositionCreateManyMarketInputEnvelope
+    connect?: PositionWhereUniqueInput | PositionWhereUniqueInput[]
+  }
+
+  export type PositionUncheckedCreateNestedManyWithoutMarketInput = {
+    create?: XOR<PositionCreateWithoutMarketInput, PositionUncheckedCreateWithoutMarketInput> | PositionCreateWithoutMarketInput[] | PositionUncheckedCreateWithoutMarketInput[]
+    connectOrCreate?: PositionCreateOrConnectWithoutMarketInput | PositionCreateOrConnectWithoutMarketInput[]
+    createMany?: PositionCreateManyMarketInputEnvelope
+    connect?: PositionWhereUniqueInput | PositionWhereUniqueInput[]
   }
 
   export type FloatFieldUpdateOperationsInput = {
@@ -7797,12 +9456,72 @@ export namespace Prisma {
     divide?: number
   }
 
+  export type NullableFloatFieldUpdateOperationsInput = {
+    set?: number | null
+    increment?: number
+    decrement?: number
+    multiply?: number
+    divide?: number
+  }
+
+  export type BoolFieldUpdateOperationsInput = {
+    set?: boolean
+  }
+
+  export type PositionUpdateManyWithoutMarketNestedInput = {
+    create?: XOR<PositionCreateWithoutMarketInput, PositionUncheckedCreateWithoutMarketInput> | PositionCreateWithoutMarketInput[] | PositionUncheckedCreateWithoutMarketInput[]
+    connectOrCreate?: PositionCreateOrConnectWithoutMarketInput | PositionCreateOrConnectWithoutMarketInput[]
+    upsert?: PositionUpsertWithWhereUniqueWithoutMarketInput | PositionUpsertWithWhereUniqueWithoutMarketInput[]
+    createMany?: PositionCreateManyMarketInputEnvelope
+    set?: PositionWhereUniqueInput | PositionWhereUniqueInput[]
+    disconnect?: PositionWhereUniqueInput | PositionWhereUniqueInput[]
+    delete?: PositionWhereUniqueInput | PositionWhereUniqueInput[]
+    connect?: PositionWhereUniqueInput | PositionWhereUniqueInput[]
+    update?: PositionUpdateWithWhereUniqueWithoutMarketInput | PositionUpdateWithWhereUniqueWithoutMarketInput[]
+    updateMany?: PositionUpdateManyWithWhereWithoutMarketInput | PositionUpdateManyWithWhereWithoutMarketInput[]
+    deleteMany?: PositionScalarWhereInput | PositionScalarWhereInput[]
+  }
+
+  export type PositionUncheckedUpdateManyWithoutMarketNestedInput = {
+    create?: XOR<PositionCreateWithoutMarketInput, PositionUncheckedCreateWithoutMarketInput> | PositionCreateWithoutMarketInput[] | PositionUncheckedCreateWithoutMarketInput[]
+    connectOrCreate?: PositionCreateOrConnectWithoutMarketInput | PositionCreateOrConnectWithoutMarketInput[]
+    upsert?: PositionUpsertWithWhereUniqueWithoutMarketInput | PositionUpsertWithWhereUniqueWithoutMarketInput[]
+    createMany?: PositionCreateManyMarketInputEnvelope
+    set?: PositionWhereUniqueInput | PositionWhereUniqueInput[]
+    disconnect?: PositionWhereUniqueInput | PositionWhereUniqueInput[]
+    delete?: PositionWhereUniqueInput | PositionWhereUniqueInput[]
+    connect?: PositionWhereUniqueInput | PositionWhereUniqueInput[]
+    update?: PositionUpdateWithWhereUniqueWithoutMarketInput | PositionUpdateWithWhereUniqueWithoutMarketInput[]
+    updateMany?: PositionUpdateManyWithWhereWithoutMarketInput | PositionUpdateManyWithWhereWithoutMarketInput[]
+    deleteMany?: PositionScalarWhereInput | PositionScalarWhereInput[]
+  }
+
+  export type UserCreateNestedOneWithoutPositionsInput = {
+    create?: XOR<UserCreateWithoutPositionsInput, UserUncheckedCreateWithoutPositionsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutPositionsInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type MarketCreateNestedOneWithoutPositionsInput = {
+    create?: XOR<MarketCreateWithoutPositionsInput, MarketUncheckedCreateWithoutPositionsInput>
+    connectOrCreate?: MarketCreateOrConnectWithoutPositionsInput
+    connect?: MarketWhereUniqueInput
+  }
+
   export type UserUpdateOneRequiredWithoutPositionsNestedInput = {
     create?: XOR<UserCreateWithoutPositionsInput, UserUncheckedCreateWithoutPositionsInput>
     connectOrCreate?: UserCreateOrConnectWithoutPositionsInput
     upsert?: UserUpsertWithoutPositionsInput
     connect?: UserWhereUniqueInput
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutPositionsInput, UserUpdateWithoutPositionsInput>, UserUncheckedUpdateWithoutPositionsInput>
+  }
+
+  export type MarketUpdateOneRequiredWithoutPositionsNestedInput = {
+    create?: XOR<MarketCreateWithoutPositionsInput, MarketUncheckedCreateWithoutPositionsInput>
+    connectOrCreate?: MarketCreateOrConnectWithoutPositionsInput
+    upsert?: MarketUpsertWithoutPositionsInput
+    connect?: MarketWhereUniqueInput
+    update?: XOR<XOR<MarketUpdateToOneWithWhereWithoutPositionsInput, MarketUpdateWithoutPositionsInput>, MarketUncheckedUpdateWithoutPositionsInput>
   }
 
   export type UserCreateNestedOneWithoutTransfersInput = {
@@ -7961,6 +9680,22 @@ export namespace Prisma {
     not?: NestedFloatFilter<$PrismaModel> | number
   }
 
+  export type NestedFloatNullableFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatNullableFilter<$PrismaModel> | number | null
+  }
+
+  export type NestedBoolFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolFilter<$PrismaModel> | boolean
+  }
+
   export type NestedFloatWithAggregatesFilter<$PrismaModel = never> = {
     equals?: number | FloatFieldRefInput<$PrismaModel>
     in?: number[] | ListFloatFieldRefInput<$PrismaModel>
@@ -7975,6 +9710,30 @@ export namespace Prisma {
     _sum?: NestedFloatFilter<$PrismaModel>
     _min?: NestedFloatFilter<$PrismaModel>
     _max?: NestedFloatFilter<$PrismaModel>
+  }
+
+  export type NestedFloatNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatNullableWithAggregatesFilter<$PrismaModel> | number | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedFloatNullableFilter<$PrismaModel>
+    _sum?: NestedFloatNullableFilter<$PrismaModel>
+    _min?: NestedFloatNullableFilter<$PrismaModel>
+    _max?: NestedFloatNullableFilter<$PrismaModel>
+  }
+
+  export type NestedBoolWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedBoolFilter<$PrismaModel>
+    _max?: NestedBoolFilter<$PrismaModel>
   }
 
   export type NestedIntWithAggregatesFilter<$PrismaModel = never> = {
@@ -8020,13 +9779,13 @@ export namespace Prisma {
 
   export type PositionCreateWithoutUserInput = {
     id?: string
-    marketId: string
     tokenId: string
     amount: number
     side: string
     price: number
     createdAt?: Date | string
     updatedAt?: Date | string
+    market: MarketCreateNestedOneWithoutPositionsInput
   }
 
   export type PositionUncheckedCreateWithoutUserInput = {
@@ -8307,6 +10066,54 @@ export namespace Prisma {
     balances?: BalanceUncheckedUpdateManyWithoutUserNestedInput
   }
 
+  export type PositionCreateWithoutMarketInput = {
+    id?: string
+    tokenId: string
+    amount: number
+    side: string
+    price: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    user: UserCreateNestedOneWithoutPositionsInput
+  }
+
+  export type PositionUncheckedCreateWithoutMarketInput = {
+    id?: string
+    userId: string
+    tokenId: string
+    amount: number
+    side: string
+    price: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type PositionCreateOrConnectWithoutMarketInput = {
+    where: PositionWhereUniqueInput
+    create: XOR<PositionCreateWithoutMarketInput, PositionUncheckedCreateWithoutMarketInput>
+  }
+
+  export type PositionCreateManyMarketInputEnvelope = {
+    data: PositionCreateManyMarketInput | PositionCreateManyMarketInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type PositionUpsertWithWhereUniqueWithoutMarketInput = {
+    where: PositionWhereUniqueInput
+    update: XOR<PositionUpdateWithoutMarketInput, PositionUncheckedUpdateWithoutMarketInput>
+    create: XOR<PositionCreateWithoutMarketInput, PositionUncheckedCreateWithoutMarketInput>
+  }
+
+  export type PositionUpdateWithWhereUniqueWithoutMarketInput = {
+    where: PositionWhereUniqueInput
+    data: XOR<PositionUpdateWithoutMarketInput, PositionUncheckedUpdateWithoutMarketInput>
+  }
+
+  export type PositionUpdateManyWithWhereWithoutMarketInput = {
+    where: PositionScalarWhereInput
+    data: XOR<PositionUpdateManyMutationInput, PositionUncheckedUpdateManyWithoutMarketInput>
+  }
+
   export type UserCreateWithoutPositionsInput = {
     id?: string
     telegramId: string
@@ -8338,6 +10145,49 @@ export namespace Prisma {
   export type UserCreateOrConnectWithoutPositionsInput = {
     where: UserWhereUniqueInput
     create: XOR<UserCreateWithoutPositionsInput, UserUncheckedCreateWithoutPositionsInput>
+  }
+
+  export type MarketCreateWithoutPositionsInput = {
+    id?: string
+    polymarketId: string
+    question: string
+    description?: string | null
+    endDate: Date | string
+    volume24h?: number
+    liquidity?: number
+    yesPrice?: number
+    noPrice?: number
+    priceChange24h?: number | null
+    yesTokenId: string
+    noTokenId: string
+    isActive?: boolean
+    isArchived?: boolean
+    lastUpdated?: Date | string
+    createdAt?: Date | string
+  }
+
+  export type MarketUncheckedCreateWithoutPositionsInput = {
+    id?: string
+    polymarketId: string
+    question: string
+    description?: string | null
+    endDate: Date | string
+    volume24h?: number
+    liquidity?: number
+    yesPrice?: number
+    noPrice?: number
+    priceChange24h?: number | null
+    yesTokenId: string
+    noTokenId: string
+    isActive?: boolean
+    isArchived?: boolean
+    lastUpdated?: Date | string
+    createdAt?: Date | string
+  }
+
+  export type MarketCreateOrConnectWithoutPositionsInput = {
+    where: MarketWhereUniqueInput
+    create: XOR<MarketCreateWithoutPositionsInput, MarketUncheckedCreateWithoutPositionsInput>
   }
 
   export type UserUpsertWithoutPositionsInput = {
@@ -8377,6 +10227,55 @@ export namespace Prisma {
     wallet?: WalletUncheckedUpdateOneWithoutUserNestedInput
     transfers?: TransferUncheckedUpdateManyWithoutUserNestedInput
     balances?: BalanceUncheckedUpdateManyWithoutUserNestedInput
+  }
+
+  export type MarketUpsertWithoutPositionsInput = {
+    update: XOR<MarketUpdateWithoutPositionsInput, MarketUncheckedUpdateWithoutPositionsInput>
+    create: XOR<MarketCreateWithoutPositionsInput, MarketUncheckedCreateWithoutPositionsInput>
+    where?: MarketWhereInput
+  }
+
+  export type MarketUpdateToOneWithWhereWithoutPositionsInput = {
+    where?: MarketWhereInput
+    data: XOR<MarketUpdateWithoutPositionsInput, MarketUncheckedUpdateWithoutPositionsInput>
+  }
+
+  export type MarketUpdateWithoutPositionsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    polymarketId?: StringFieldUpdateOperationsInput | string
+    question?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    endDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    volume24h?: FloatFieldUpdateOperationsInput | number
+    liquidity?: FloatFieldUpdateOperationsInput | number
+    yesPrice?: FloatFieldUpdateOperationsInput | number
+    noPrice?: FloatFieldUpdateOperationsInput | number
+    priceChange24h?: NullableFloatFieldUpdateOperationsInput | number | null
+    yesTokenId?: StringFieldUpdateOperationsInput | string
+    noTokenId?: StringFieldUpdateOperationsInput | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isArchived?: BoolFieldUpdateOperationsInput | boolean
+    lastUpdated?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type MarketUncheckedUpdateWithoutPositionsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    polymarketId?: StringFieldUpdateOperationsInput | string
+    question?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    endDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    volume24h?: FloatFieldUpdateOperationsInput | number
+    liquidity?: FloatFieldUpdateOperationsInput | number
+    yesPrice?: FloatFieldUpdateOperationsInput | number
+    noPrice?: FloatFieldUpdateOperationsInput | number
+    priceChange24h?: NullableFloatFieldUpdateOperationsInput | number | null
+    yesTokenId?: StringFieldUpdateOperationsInput | string
+    noTokenId?: StringFieldUpdateOperationsInput | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isArchived?: BoolFieldUpdateOperationsInput | boolean
+    lastUpdated?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type UserCreateWithoutTransfersInput = {
@@ -8557,13 +10456,13 @@ export namespace Prisma {
 
   export type PositionUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
-    marketId?: StringFieldUpdateOperationsInput | string
     tokenId?: StringFieldUpdateOperationsInput | string
     amount?: FloatFieldUpdateOperationsInput | number
     side?: StringFieldUpdateOperationsInput | string
     price?: FloatFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    market?: MarketUpdateOneRequiredWithoutPositionsNestedInput
   }
 
   export type PositionUncheckedUpdateWithoutUserInput = {
@@ -8651,6 +10550,50 @@ export namespace Prisma {
     timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type PositionCreateManyMarketInput = {
+    id?: string
+    userId: string
+    tokenId: string
+    amount: number
+    side: string
+    price: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type PositionUpdateWithoutMarketInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tokenId?: StringFieldUpdateOperationsInput | string
+    amount?: FloatFieldUpdateOperationsInput | number
+    side?: StringFieldUpdateOperationsInput | string
+    price?: FloatFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutPositionsNestedInput
+  }
+
+  export type PositionUncheckedUpdateWithoutMarketInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    tokenId?: StringFieldUpdateOperationsInput | string
+    amount?: FloatFieldUpdateOperationsInput | number
+    side?: StringFieldUpdateOperationsInput | string
+    price?: FloatFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PositionUncheckedUpdateManyWithoutMarketInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    tokenId?: StringFieldUpdateOperationsInput | string
+    amount?: FloatFieldUpdateOperationsInput | number
+    side?: StringFieldUpdateOperationsInput | string
+    price?: FloatFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
 
 
   /**
@@ -8661,6 +10604,10 @@ export namespace Prisma {
      */
     export type UserCountOutputTypeArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = UserCountOutputTypeDefaultArgs<ExtArgs>
     /**
+     * @deprecated Use MarketCountOutputTypeDefaultArgs instead
+     */
+    export type MarketCountOutputTypeArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = MarketCountOutputTypeDefaultArgs<ExtArgs>
+    /**
      * @deprecated Use UserDefaultArgs instead
      */
     export type UserArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = UserDefaultArgs<ExtArgs>
@@ -8668,6 +10615,10 @@ export namespace Prisma {
      * @deprecated Use WalletDefaultArgs instead
      */
     export type WalletArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = WalletDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use MarketDefaultArgs instead
+     */
+    export type MarketArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = MarketDefaultArgs<ExtArgs>
     /**
      * @deprecated Use PositionDefaultArgs instead
      */

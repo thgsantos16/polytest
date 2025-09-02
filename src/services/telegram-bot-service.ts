@@ -104,6 +104,18 @@ export class TelegramBotService {
       description: "Start/stop wallet monitoring for transfers",
       handler: this.handleMonitor.bind(this),
     });
+
+    this.commands.set("/cache", {
+      command: "/cache",
+      description: "Check markets cache status",
+      handler: this.handleCache.bind(this),
+    });
+
+    this.commands.set("/cache_clear", {
+      command: "/cache_clear",
+      description: "Clear markets cache (admin only)",
+      handler: this.handleCacheClear.bind(this),
+    });
   }
 
   private setupBot(): void {
@@ -418,7 +430,7 @@ export class TelegramBotService {
       await this.bot.sendMessage(
         chatId,
         "❌ Invalid format. Use: /trade <market_id> <side> <amount> <price>\n" +
-          "Example: `/trade 0x123... buy 10 0.5`"
+          "Example: `/trade abc123... buy 10 0.5`"
       );
       return;
     }
@@ -455,9 +467,8 @@ export class TelegramBotService {
         return;
       }
 
-      // Get market details to find token ID
-      const markets = await polymarketService.fetchMarkets();
-      const market = markets.find((m) => m.id === marketId);
+      // Get market details from database using CUID
+      const market = await prismaStorageService.getMarketById(marketId);
 
       if (!market) {
         await this.bot.sendMessage(chatId, "❌ Market not found.");
@@ -465,7 +476,7 @@ export class TelegramBotService {
       }
 
       const tokenId =
-        side.toLowerCase() === "buy" ? market.tokens.yes : market.tokens.no;
+        side.toLowerCase() === "buy" ? market.yesTokenId : market.noTokenId;
 
       if (!tokenId) {
         await this.bot.sendMessage(
@@ -558,12 +569,16 @@ export class TelegramBotService {
       `/positions - Show your current positions\n` +
       `/trade - Place a trade\n` +
       `/monitor - Start/stop transfer monitoring\n` +
+      `/cache - Check markets cache status\n` +
+      `/cache_clear - Clear markets cache\n` +
       `/help - Show this help message\n` +
       `/delete - Delete your account (irreversible)\n\n` +
       `💡 **Quick Trading:**\n` +
       `Use /markets to see interactive buttons for fast trading!\n\n` +
       `🔔 **Transfer Monitoring:**\n` +
       `Use /monitor to get notified of incoming ETH, USDC, and POL transfers!\n\n` +
+      ` **Markets Cache:**\n` +
+      `Markets data is cached for 5 minutes and shared across all users for faster responses!\n\n` +
       `⚠️ **Security:**\n` +
       `• Your private keys are encrypted and stored securely\n` +
       `• Never share your wallet address with others\n` +
@@ -682,6 +697,80 @@ export class TelegramBotService {
     } catch (error) {
       console.error("Error in handleMonitor:", error);
       await this.bot.sendMessage(chatId, "❌ Failed to toggle monitoring.");
+    }
+  }
+
+  private async handleCache(msg: TelegramBot.Message): Promise<void> {
+    const chatId = msg.chat.id;
+    const telegramId = msg.from?.id.toString();
+
+    if (!telegramId) {
+      await this.bot.sendMessage(chatId, "❌ Could not identify user.");
+      return;
+    }
+
+    try {
+      const cacheStatus = await polymarketService.getCacheStatus();
+
+      let statusText = "📊 **Markets Cache Status**\n\n";
+
+      if (cacheStatus.hasCache) {
+        const ageMinutes = Math.floor(cacheStatus.age / 1000 / 60);
+        const ttlMinutes = Math.floor(cacheStatus.ttl / 1000 / 60);
+        const remainingMinutes = ttlMinutes - ageMinutes;
+
+        statusText += `✅ **Cache Status:** Active\n`;
+        statusText += `🕒 **Cache Age:** ${ageMinutes} minutes\n`;
+        statusText += `⏰ **Time Remaining:** ${remainingMinutes} minutes\n`;
+        statusText += `🔄 **Next Refresh:** In ${remainingMinutes} minutes\n\n`;
+
+        if (remainingMinutes <= 1) {
+          statusText += `⚠️ Cache will expire soon!\n\n`;
+        }
+      } else {
+        statusText += `❌ **Cache Status:** No cached data\n`;
+        statusText += `🔄 **Next Request:** Will fetch fresh data\n\n`;
+      }
+
+      statusText += `💡 **Cache Benefits:**\n`;
+      statusText += `• Faster response times for all users\n`;
+      statusText += `• Reduced API calls to Polymarket\n`;
+      statusText += `• Shared across all bot users\n`;
+      statusText += `• Auto-refreshes every 5 minutes\n\n`;
+
+      statusText += `🔧 **Cache Commands:**\n`;
+      statusText += `• /cache - Show this status\n`;
+      statusText += `• /cache_clear - Clear cache\n`;
+      statusText += `• /markets - Uses cached data if available`;
+
+      await this.bot.sendMessage(chatId, statusText);
+    } catch (error) {
+      console.error("Error in handleCache:", error);
+      await this.bot.sendMessage(chatId, "❌ Failed to get cache status.");
+    }
+  }
+
+  private async handleCacheClear(msg: TelegramBot.Message): Promise<void> {
+    const chatId = msg.chat.id;
+    const telegramId = msg.from?.id.toString();
+
+    if (!telegramId) {
+      await this.bot.sendMessage(chatId, "❌ Could not identify user.");
+      return;
+    }
+
+    try {
+      polymarketService.clearCache();
+
+      await this.bot.sendMessage(
+        chatId,
+        "🗑️ **Cache Cleared Successfully**\n\n" +
+          "The markets cache has been cleared.\n" +
+          "The next /markets request will fetch fresh data from Polymarket."
+      );
+    } catch (error) {
+      console.error("Error in handleCacheClear:", error);
+      await this.bot.sendMessage(chatId, "❌ Failed to clear cache.");
     }
   }
 
@@ -851,7 +940,7 @@ export class TelegramBotService {
         return;
       }
 
-      const tokenId = side === "buy" ? market.tokens.yes : market.tokens.no;
+      const tokenId = side === "buy" ? market.yesTokenId : market.noTokenId;
 
       if (!tokenId) {
         await this.bot.answerCallbackQuery(callbackQuery.id, {

@@ -47,6 +47,30 @@ model Wallet {
   @@map("wallets")
 }
 
+model Market {
+  id             String   @id @default(cuid())
+  polymarketId   String   @unique // The original Polymarket condition_id
+  question       String
+  description    String?
+  endDate        DateTime
+  volume24h      Float    @default(0)
+  liquidity      Float    @default(0)
+  yesPrice       Float    @default(0.5)
+  noPrice        Float    @default(0.5)
+  priceChange24h Float?
+  yesTokenId     String
+  noTokenId      String
+  isActive       Boolean  @default(true)
+  isArchived     Boolean  @default(false)
+  lastUpdated    DateTime @default(now())
+  createdAt      DateTime @default(now())
+
+  // Relations
+  positions Position[]
+
+  @@map("markets")
+}
+
 model Position {
   id        String   @id @default(cuid())
   userId    String
@@ -59,7 +83,8 @@ model Position {
   updatedAt DateTime @updatedAt
 
   // Relations
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  market Market @relation(fields: [marketId], references: [id], onDelete: Cascade)
 
   @@map("positions")
 }

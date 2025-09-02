@@ -302,6 +302,136 @@ export class PrismaStorageService {
     };
   }
 
+  // Market-related methods
+  async upsertMarket(marketData: {
+    polymarketId: string;
+    question: string;
+    description?: string;
+    endDate: Date;
+    volume24h: number;
+    liquidity: number;
+    yesPrice: number;
+    noPrice: number;
+    priceChange24h?: number;
+    yesTokenId: string;
+    noTokenId: string;
+    isActive: boolean;
+    isArchived: boolean;
+  }): Promise<string> {
+    try {
+      const market = await prisma.market.upsert({
+        where: { polymarketId: marketData.polymarketId },
+        update: {
+          question: marketData.question,
+          description: marketData.description,
+          endDate: marketData.endDate,
+          volume24h: marketData.volume24h,
+          liquidity: marketData.liquidity,
+          yesPrice: marketData.yesPrice,
+          noPrice: marketData.noPrice,
+          priceChange24h: marketData.priceChange24h,
+          yesTokenId: marketData.yesTokenId,
+          noTokenId: marketData.noTokenId,
+          isActive: marketData.isActive,
+          isArchived: marketData.isArchived,
+          lastUpdated: new Date(),
+        },
+        create: marketData,
+      });
+
+      return market.id; // Return the CUID
+    } catch (error) {
+      console.error("Error upserting market:", error);
+      throw error;
+    }
+  }
+
+  async getMarketByPolymarketId(polymarketId: string) {
+    try {
+      return await prisma.market.findUnique({
+        where: { polymarketId },
+      });
+    } catch (error) {
+      console.error("Error getting market by Polymarket ID:", error);
+      throw error;
+    }
+  }
+
+  async getActiveMarkets(limit: number = 20): Promise<
+    Array<{
+      id: string;
+      polymarketId: string;
+      question: string;
+      description: string | null;
+      endDate: Date;
+      volume24h: number;
+      liquidity: number;
+      yesPrice: number;
+      noPrice: number;
+      priceChange24h: number | null;
+      yesTokenId: string;
+      noTokenId: string;
+      isActive: boolean;
+      isArchived: boolean;
+      lastUpdated: Date;
+      createdAt: Date;
+    }>
+  > {
+    try {
+      return await prisma.market.findMany({
+        where: {
+          isActive: true,
+          isArchived: false,
+        },
+        orderBy: {
+          endDate: "desc",
+        },
+        take: limit,
+      });
+    } catch (error) {
+      console.error("Error getting active markets:", error);
+      throw error;
+    }
+  }
+
+  async updateMarketPrices(
+    polymarketId: string,
+    yesPrice: number,
+    noPrice: number,
+    volume24h?: number,
+    liquidity?: number,
+    priceChange24h?: number
+  ): Promise<void> {
+    try {
+      await prisma.market.update({
+        where: { polymarketId },
+        data: {
+          yesPrice,
+          noPrice,
+          volume24h: volume24h !== undefined ? volume24h : undefined,
+          liquidity: liquidity !== undefined ? liquidity : undefined,
+          priceChange24h:
+            priceChange24h !== undefined ? priceChange24h : undefined,
+          lastUpdated: new Date(),
+        },
+      });
+    } catch (error) {
+      console.error("Error updating market prices:", error);
+      throw error;
+    }
+  }
+
+  async getMarketById(marketId: string) {
+    try {
+      return await prisma.market.findUnique({
+        where: { id: marketId },
+      });
+    } catch (error) {
+      console.error("Error getting market by ID:", error);
+      throw error;
+    }
+  }
+
   // Cleanup
   async disconnect() {
     await prisma.$disconnect();

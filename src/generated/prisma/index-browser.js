@@ -144,6 +144,25 @@ exports.Prisma.WalletScalarFieldEnum = {
   lastUsed: 'lastUsed'
 };
 
+exports.Prisma.MarketScalarFieldEnum = {
+  id: 'id',
+  polymarketId: 'polymarketId',
+  question: 'question',
+  description: 'description',
+  endDate: 'endDate',
+  volume24h: 'volume24h',
+  liquidity: 'liquidity',
+  yesPrice: 'yesPrice',
+  noPrice: 'noPrice',
+  priceChange24h: 'priceChange24h',
+  yesTokenId: 'yesTokenId',
+  noTokenId: 'noTokenId',
+  isActive: 'isActive',
+  isArchived: 'isArchived',
+  lastUpdated: 'lastUpdated',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.PositionScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
@@ -198,6 +217,7 @@ exports.Prisma.NullsOrder = {
 exports.Prisma.ModelName = {
   User: 'User',
   Wallet: 'Wallet',
+  Market: 'Market',
   Position: 'Position',
   Transfer: 'Transfer',
   Balance: 'Balance'
