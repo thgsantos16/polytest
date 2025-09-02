@@ -315,7 +315,7 @@ export class PolymarketService {
                 description: market.description,
                 endDate: new Date(market.endDate),
                 volume24h: market.volume24h,
-                liquidity: market.liquidity,
+                liquidity: Number(market.liquidity),
                 yesPrice: market.yesPrice,
                 noPrice: market.noPrice,
                 priceChange24h: market.priceChange24h || undefined,

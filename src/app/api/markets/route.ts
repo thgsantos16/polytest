@@ -83,7 +83,7 @@ export async function GET(request: NextRequest) {
           endDate:
             market.endDate || market.end_date || new Date().toISOString(),
           volume24h: market.volume24hr || market.volume || 0,
-          liquidity: market.liquidity || 0,
+          liquidity: Number(market.liquidity) || 0,
           yesPrice: 0.5, // Default fallback
           noPrice: 0.5, // Default fallback
           priceChange24h: market.oneDayPriceChange || null,
