@@ -1,7 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Market, polymarketService } from "@/services/polymarket-service";
+import {
+  Market,
+  polymarketClientService,
+} from "@/services/polymarket-client-service";
 
 interface MarketListProps {
   onMarketSelect: (market: Market) => void;
@@ -20,7 +23,7 @@ export default function MarketList({
     const fetchMarkets = async () => {
       try {
         setLoading(true);
-        const fetchedMarkets = await polymarketService.fetchMarkets();
+        const fetchedMarkets = await polymarketClientService.fetchMarkets();
         setMarkets(fetchedMarkets);
         setError("");
       } catch (err) {

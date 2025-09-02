@@ -1,7 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { Market, polymarketService } from "@/services/polymarket-service";
+import {
+  Market,
+  polymarketClientService,
+} from "@/services/polymarket-client-service";
 import { useWalletClient } from "wagmi";
 
 interface OrderFormProps {
@@ -56,7 +59,7 @@ export default function OrderForm({ market, walletAddress }: OrderFormProps) {
       setSignatureRequested(true);
 
       // Initialize the Polymarket client
-      await polymarketService.initializeClient(walletClient);
+      await polymarketClientService.initializeClient(walletClient);
 
       const orderDetails = {
         marketId: market.id,
@@ -69,10 +72,7 @@ export default function OrderForm({ market, walletAddress }: OrderFormProps) {
 
       console.log("Placing order...");
 
-      const result = await polymarketService.placeOrder(
-        orderDetails,
-        walletClient
-      );
+      const result = await polymarketClientService.placeOrder();
       setOrderResult(result);
 
       if (result.success) {

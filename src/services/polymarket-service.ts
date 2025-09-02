@@ -190,6 +190,7 @@ export class PolymarketService {
 
       try {
         // Use local API route to avoid CORS issues
+        const appUrl = process.env.NEXT_PUBLIC_APP_URL;
         const apiUrl = "/api/markets";
         const params = new URLSearchParams({
           active: "true",
