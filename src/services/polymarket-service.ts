@@ -590,7 +590,7 @@ export class PolymarketService {
       console.log("Checking and approving USDC allowances...");
 
       // Contract addresses from the Python example
-      const usdcAddress = "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174";
+      const usdcAddress = "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359";
       const ctfAddress = "0x4D97DCd97eC945f40cF65F87097ACe5EA0476045";
 
       // Polymarket contract addresses that need approval

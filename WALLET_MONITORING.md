@@ -21,7 +21,7 @@ The monitoring service supports the following blockchain networks:
 - **Chain ID**: 137
 - **Supported Tokens**:
   - MATIC (native)
-  - USDC: `0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174`
+  - USDC: `0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359`
   - POL: `0x455e53CBB86018Ac2B8092FdCd39b8443aA31FE6`
 
 ### 3. Arbitrum

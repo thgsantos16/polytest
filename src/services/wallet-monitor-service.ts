@@ -24,7 +24,7 @@ const CHAINS = {
     rpc: process.env.POLYGON_RPC_URL || "https://polygon-rpc.com",
     chainId: 137,
     tokens: {
-      usdc: "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174", // USDC on Polygon
+      usdc: "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359", // USDC on Polygon
       pol: "0x0000000000000000000000000000000000001010", // POL is the native token of Polygon
     },
   },
