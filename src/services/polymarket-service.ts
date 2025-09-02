@@ -190,11 +190,11 @@ export class PolymarketService {
 
       try {
         // Use local API route to avoid CORS issues
-        const apiUrl = "http://localhost:3000/api/markets";
+        const apiUrl = "/api/markets";
         const params = new URLSearchParams({
           active: "true",
           closed: "false", // Only get open markets
-          limit: "50", // Get more markets to filter from
+          limit: "5", // Only get what we need for display
         });
 
         const response = await fetch(`${apiUrl}?${params}`);

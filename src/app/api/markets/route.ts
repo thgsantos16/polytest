@@ -6,12 +6,16 @@ export async function GET(request: NextRequest) {
     const active = searchParams.get("active") || "true";
     const closed = searchParams.get("closed") || "false";
     const limit = searchParams.get("limit") || "50";
+    const ascending = searchParams.get("ascending") || "false";
+    const order = searchParams.get("order") || "createdAt";
 
     const gammaApiUrl = "https://gamma-api.polymarket.com/markets";
     const params = new URLSearchParams({
       active,
       closed,
       limit,
+      ascending,
+      order,
     });
 
     const response = await fetch(`${gammaApiUrl}?${params}`);
