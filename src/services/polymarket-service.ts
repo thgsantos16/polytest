@@ -495,8 +495,14 @@ export class PolymarketService {
             // Get detailed market data from CLOB API using conditionId
             const detailedMarket = await marketClient.getMarket(conditionId);
 
-            if (detailedMarket && detailedMarket.tokens) {
-              const marketData = detailedMarket;
+            console.log("Detailed market:", detailedMarket);
+
+            if (detailedMarket.data && detailedMarket.data.tokens) {
+              const marketData = detailedMarket.data;
+              const tokens = marketData.tokens;
+
+              console.log("Market data:", marketData);
+              console.log("Tokens:", tokens);
 
               // Extract real-time prices from order book or last trade
               let yesPrice = market.yesPrice; // Keep existing price as fallback
@@ -522,13 +528,13 @@ export class PolymarketService {
               let yesTokenId = market.yesTokenId; // Changed from market.tokens.yes
               let noTokenId = market.noTokenId; // Changed from market.tokens.no
 
-              if (marketData.tokens && Array.isArray(marketData.tokens)) {
-                const yesToken = marketData.tokens.find(
+              if (tokens && Array.isArray(tokens)) {
+                const yesToken = tokens.find(
                   (token: { outcome?: string; token_id?: string }) =>
                     token.outcome?.toLowerCase().includes("yes") ||
                     token.outcome?.toLowerCase().includes("true")
                 );
-                const noToken = marketData.tokens.find(
+                const noToken = tokens.find(
                   (token: { outcome?: string; token_id?: string }) =>
                     token.outcome?.toLowerCase().includes("no") ||
                     token.outcome?.toLowerCase().includes("false")
