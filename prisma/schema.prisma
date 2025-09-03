@@ -36,7 +36,7 @@ model Wallet {
   userId              String   @unique
   walletAddress       String   @unique
   encryptedPrivateKey String   @db.Text
-  encryptionIV        String   // Store IV for each encrypted key
+  encryptionIV        String // Store IV for each encrypted key
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
   lastUsed            DateTime @default(now())
@@ -48,22 +48,23 @@ model Wallet {
 }
 
 model Market {
-  id          String   @id @default(cuid())
-  polymarketId String  @unique // The original Polymarket condition_id
-  question    String
-  description String?
-  endDate     DateTime
-  volume24h   Float    @default(0)
-  liquidity   Float    @default(0)
-  yesPrice    Float    @default(0.5)
-  noPrice     Float    @default(0.5)
+  id             String   @id @default(cuid())
+  polymarketId   String   @unique // The original Polymarket condition_id
+  question       String
+  description    String?
+  endDate        DateTime
+  volume24h      Float    @default(0)
+  liquidity      Float    @default(0)
+  yesPrice       Float    @default(0.5)
+  noPrice        Float    @default(0.5)
   priceChange24h Float?
-  yesTokenId  String
-  noTokenId   String
-  isActive    Boolean  @default(true)
-  isArchived  Boolean  @default(false)
-  lastUpdated DateTime @default(now())
-  createdAt   DateTime @default(now())
+  yesTokenId     String
+  noTokenId      String
+  conditionId    String?
+  isActive       Boolean  @default(true)
+  isArchived     Boolean  @default(false)
+  lastUpdated    DateTime @default(now())
+  createdAt      DateTime @default(now())
 
   // Relations
   positions Position[]

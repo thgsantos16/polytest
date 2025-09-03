@@ -317,6 +317,7 @@ export class PrismaStorageService {
     noTokenId: string;
     isActive: boolean;
     isArchived: boolean;
+    conditionId: string;
   }): Promise<string> {
     try {
       const market = await prisma.market.upsert({
@@ -335,6 +336,7 @@ export class PrismaStorageService {
           isActive: marketData.isActive,
           isArchived: marketData.isArchived,
           lastUpdated: new Date(),
+          conditionId: marketData.conditionId,
         },
         create: marketData,
       });

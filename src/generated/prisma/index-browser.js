@@ -157,6 +157,7 @@ exports.Prisma.MarketScalarFieldEnum = {
   priceChange24h: 'priceChange24h',
   yesTokenId: 'yesTokenId',
   noTokenId: 'noTokenId',
+  conditionId: 'conditionId',
   isActive: 'isActive',
   isArchived: 'isArchived',
   lastUpdated: 'lastUpdated',

@@ -1,33 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prismaStorageService } from "@/services/prisma-storage-service";
+
+export const revalidate = 30; // 30 seconds cache between all users
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const limit = parseInt(searchParams.get("limit") || "5");
-
-    // First try to get markets from database
-    const dbMarkets = await prismaStorageService.getActiveMarkets(limit);
-
-    if (dbMarkets.length > 0) {
-      // Transform database markets to client Market interface
-      const markets = dbMarkets.map((dbMarket) => ({
-        id: dbMarket.id,
-        cuid: dbMarket.id, // Use database ID as CUID
-        question: dbMarket.question,
-        description: dbMarket.description || "",
-        endDate: dbMarket.endDate.toISOString(),
-        volume24h: dbMarket.volume24h,
-        liquidity: dbMarket.liquidity,
-        yesPrice: dbMarket.yesPrice,
-        noPrice: dbMarket.noPrice,
-        priceChange24h: dbMarket.priceChange24h,
-        yesTokenId: dbMarket.yesTokenId,
-        noTokenId: dbMarket.noTokenId,
-      }));
-
-      return NextResponse.json(markets);
-    }
 
     // If no database markets, fallback to Gamma API
     const gammaApiUrl = "https://gamma-api.polymarket.com/markets";

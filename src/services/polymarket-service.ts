@@ -23,8 +23,9 @@ export interface Market {
   yesPrice: number;
   noPrice: number;
   priceChange24h?: number | null;
-  yesTokenId: string; // Changed from tokens.yes
-  noTokenId: string; // Changed from tokens.no
+  yesTokenId: string;
+  noTokenId: string;
+  conditionId?: string;
 }
 
 export interface PolymarketMarket {
@@ -323,6 +324,7 @@ export class PolymarketService {
                 noTokenId: market.noTokenId, // Changed from tokens.no
                 isActive: true,
                 isArchived: false,
+                conditionId: market.conditionId || "",
               });
 
               storedMarketIds.push({

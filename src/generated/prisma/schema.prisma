@@ -60,6 +60,7 @@ model Market {
   priceChange24h Float?
   yesTokenId     String
   noTokenId      String
+  conditionId    String?
   isActive       Boolean  @default(true)
   isArchived     Boolean  @default(false)
   lastUpdated    DateTime @default(now())
