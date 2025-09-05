@@ -2,7 +2,10 @@
 
 import { useState, useEffect } from "react";
 import { useAccount, useWalletClient } from "wagmi";
-import { PolymarketService, Market } from "@/services/polymarket-service";
+import {
+  PolymarketClientService,
+  Market,
+} from "@/services/polymarket-client-service";
 import { ClobClient, Chain } from "@polymarket/clob-client";
 
 interface TestResult {
@@ -22,7 +25,7 @@ interface ClobToken {
 export default function TestPage() {
   const { address, isConnected } = useAccount();
   const { data: walletClient } = useWalletClient();
-  const [polymarketService] = useState(() => new PolymarketService());
+  const [polymarketService] = useState(() => new PolymarketClientService());
   const [clobClient] = useState(
     () => new ClobClient("https://clob.polymarket.com", Chain.POLYGON)
   );
@@ -31,6 +34,12 @@ export default function TestPage() {
   const [isRunning, setIsRunning] = useState(false);
   const [selectedMarket, setSelectedMarket] = useState<Market | null>(null);
   const [markets, setMarkets] = useState<Market[]>([]);
+
+  // Telegram bot testing state
+  const [telegramChatId, setTelegramChatId] = useState("");
+  const [telegramMessage, setTelegramMessage] = useState("");
+  const [selectedTelegramMarket, setSelectedTelegramMarket] =
+    useState<Market | null>(null);
 
   const addTestResult = (
     test: string,
@@ -94,6 +103,7 @@ export default function TestPage() {
 
         if (enhancedMarkets.length > 0) {
           setSelectedMarket(enhancedMarkets[0]);
+          setSelectedTelegramMarket(enhancedMarkets[0]);
         }
       }
 
@@ -173,10 +183,7 @@ export default function TestPage() {
         orderDetails
       );
 
-      const result = await polymarketService.placeOrder(
-        orderDetails,
-        walletClient
-      );
+      const result = await polymarketService.placeOrder();
       addTestResult(
         "Order Placement",
         result.success ? "success" : "error",
@@ -216,6 +223,155 @@ export default function TestPage() {
       setIsRunning(false);
     }
   };
+
+  // Telegram bot testing functions
+  const sendTelegramMessage = async () => {
+    if (!telegramChatId || !telegramMessage) {
+      addTestResult(
+        "Telegram Message",
+        "error",
+        "❌ Chat ID and message are required"
+      );
+      return;
+    }
+
+    setIsRunning(true);
+    addTestResult(
+      "Telegram Message",
+      "success",
+      "Sending message to Telegram bot..."
+    );
+
+    try {
+      const response = await fetch("/api/telegram/send-message", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          chatId: telegramChatId,
+          message: telegramMessage,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        addTestResult(
+          "Telegram Message",
+          "success",
+          "✅ Message sent successfully to Telegram bot",
+          result
+        );
+      } else {
+        addTestResult(
+          "Telegram Message",
+          "error",
+          `❌ Failed to send message: ${result.error}`,
+          result
+        );
+      }
+    } catch (error) {
+      addTestResult(
+        "Telegram Message",
+        "error",
+        `❌ Telegram message failed: ${(error as Error).message}`
+      );
+    } finally {
+      setIsRunning(false);
+    }
+  };
+
+  const testTelegramTradeButton = async (side: "buy" | "sell") => {
+    if (!telegramChatId || !selectedTelegramMarket) {
+      addTestResult(
+        "Telegram Trade Button",
+        "error",
+        "❌ Chat ID and market selection are required"
+      );
+      return;
+    }
+
+    setIsRunning(true);
+    addTestResult(
+      "Telegram Trade Button",
+      "success",
+      `Testing ${side} button for market: ${selectedTelegramMarket.question}`
+    );
+
+    try {
+      const response = await fetch("/api/telegram/send-message", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          chatId: telegramChatId,
+          marketCuid: selectedTelegramMarket.cuid,
+          side: side,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        addTestResult(
+          "Telegram Trade Button",
+          "success",
+          `✅ ${side.toUpperCase()} button test sent successfully`,
+          result
+        );
+      } else {
+        addTestResult(
+          "Telegram Trade Button",
+          "error",
+          `❌ Failed to send ${side} button test: ${result.error}`,
+          result
+        );
+      }
+    } catch (error) {
+      addTestResult(
+        "Telegram Trade Button",
+        "error",
+        `❌ Telegram ${side} button test failed: ${(error as Error).message}`
+      );
+    } finally {
+      setIsRunning(false);
+    }
+  };
+
+  // Add this function to load markets independently
+  const loadMarkets = async () => {
+    try {
+      addTestResult(
+        "Load Markets",
+        "success",
+        "Loading markets for Telegram testing..."
+      );
+      const fetchedMarkets = await polymarketService.fetchMarkets(10);
+      setMarkets(fetchedMarkets);
+      if (fetchedMarkets.length > 0) {
+        setSelectedTelegramMarket(fetchedMarkets[0]);
+      }
+      addTestResult(
+        "Load Markets",
+        "success",
+        `✅ Loaded ${fetchedMarkets.length} markets for testing`,
+        fetchedMarkets
+      );
+    } catch (error) {
+      addTestResult(
+        "Load Markets",
+        "error",
+        `❌ Failed to load markets: ${(error as Error).message}`
+      );
+    }
+  };
+
+  // Load markets when component mounts
+  useEffect(() => {
+    loadMarkets();
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-50 p-8">
@@ -257,8 +413,132 @@ export default function TestPage() {
             <div className="p-4 rounded-lg bg-blue-50 border border-blue-200">
               <div className="font-medium text-gray-900">Service</div>
               <div className="text-sm text-gray-800">
-                ✅ PolymarketService Ready
+                ✅ PolymarketClientService Ready
               </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Telegram Bot Testing */}
+        <div className="bg-white rounded-lg p-6 shadow-lg border border-gray-200 mb-6">
+          <h2 className="text-xl font-semibold mb-4 text-gray-900">
+            🤖 Telegram Bot Testing
+          </h2>
+
+          {/* Add a button to reload markets */}
+          <div className="mb-4">
+            <button
+              onClick={loadMarkets}
+              disabled={isRunning}
+              className="bg-purple-600 hover:bg-purple-700 disabled:bg-gray-400 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+            >
+              {isRunning ? "Loading..." : "Load Markets"}
+            </button>
+            <span className="ml-2 text-sm text-gray-600">
+              {markets.length > 0
+                ? `${markets.length} markets loaded`
+                : "No markets loaded"}
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Message Testing */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium text-gray-900">
+                Send Test Message
+              </h3>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Telegram Chat ID
+                </label>
+                <input
+                  type="text"
+                  value={telegramChatId}
+                  onChange={(e) => setTelegramChatId(e.target.value)}
+                  placeholder="Enter your Telegram chat ID"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Test Message
+                </label>
+                <textarea
+                  value={telegramMessage}
+                  onChange={(e) => setTelegramMessage(e.target.value)}
+                  placeholder="Enter test message"
+                  rows={3}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+              <button
+                onClick={sendTelegramMessage}
+                disabled={isRunning || !telegramChatId || !telegramMessage}
+                className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+              >
+                Send Message
+              </button>
+            </div>
+
+            {/* Trade Button Testing */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium text-gray-900">
+                Test Trade Buttons
+              </h3>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Select Market for Testing
+                </label>
+                <select
+                  value={selectedTelegramMarket?.id || ""}
+                  onChange={(e) => {
+                    const market = markets.find((m) => m.id === e.target.value);
+                    setSelectedTelegramMarket(market || null);
+                  }}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  disabled={markets.length === 0}
+                >
+                  <option value="">
+                    {markets.length === 0
+                      ? "Loading markets..."
+                      : "Select a market..."}
+                  </option>
+                  {markets.map((market) => (
+                    <option key={market.id} value={market.id}>
+                      {market.question.substring(0, 50)}...
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => testTelegramTradeButton("buy")}
+                  disabled={
+                    isRunning || !telegramChatId || !selectedTelegramMarket
+                  }
+                  className="bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+                >
+                  Test Buy Button
+                </button>
+                <button
+                  onClick={() => testTelegramTradeButton("sell")}
+                  disabled={
+                    isRunning || !telegramChatId || !selectedTelegramMarket
+                  }
+                  className="bg-red-600 hover:bg-red-700 disabled:bg-gray-400 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+                >
+                  Test Sell Button
+                </button>
+              </div>
+              {selectedTelegramMarket && (
+                <div className="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg">
+                  <div className="font-medium">Selected Market:</div>
+                  <div>{selectedTelegramMarket.question}</div>
+                  <div className="mt-1">
+                    CUID: {selectedTelegramMarket.cuid}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -319,6 +599,7 @@ export default function TestPage() {
                     <div>No: {Math.round(market.noPrice * 100)}¢</div>
                     <div>Yes Token: {market.yesTokenId ? "✅" : "❌"}</div>
                     <div>No Token: {market.noTokenId ? "✅" : "❌"}</div>
+                    <div>CUID: {market.cuid}</div>
                   </div>
                 </div>
               ))}

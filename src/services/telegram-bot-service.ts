@@ -8,6 +8,7 @@ import { ethers } from "ethers";
 interface TelegramUpdate {
   update_id: number;
   message?: TelegramBot.Message;
+  callback_query?: TelegramBot.CallbackQuery;
 }
 
 export interface BotCommand {
@@ -1195,6 +1196,34 @@ export class TelegramBotService {
           update.message.chat.id,
           "❌ Unknown command. Use /help to see available commands."
         );
+      }
+    } else if (update.callback_query) {
+      // Handle callback queries (button clicks)
+      try {
+        console.log(
+          "[Process Update] Callback query received:",
+          update.callback_query
+        );
+
+        const data = update.callback_query.data;
+        if (data?.startsWith("t_")) {
+          await this.handleTradeButton(update.callback_query);
+        } else if (data?.startsWith("amount_")) {
+          await this.handleAmountButton(update.callback_query);
+        } else if (data?.startsWith("confirm_")) {
+          await this.handleConfirmTrade(update.callback_query);
+        } else if (data === "markets") {
+          await this.handleMarketsCallback(update.callback_query);
+        } else if (data === "cancel") {
+          await this.bot.answerCallbackQuery(update.callback_query.id, {
+            text: "❌ Trade cancelled",
+          });
+        }
+      } catch (error) {
+        console.error("Error handling callback query:", error);
+        await this.bot.answerCallbackQuery(update.callback_query.id, {
+          text: "❌ An error occurred. Please try again.",
+        });
       }
     }
   }

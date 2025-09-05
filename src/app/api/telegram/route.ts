@@ -10,8 +10,8 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
 
     // Handle Telegram webhook updates
-    if (body.update_id && body.message) {
-      // Process the message through our bot service
+    if (body.update_id && (body.message || body.callback_query)) {
+      // Process the update through our bot service
       await telegramBotService.processUpdate(body);
     }
 
