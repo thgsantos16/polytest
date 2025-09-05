@@ -687,7 +687,6 @@ export class TelegramBotService {
           "🚀 **Monitoring Started**\n\n" +
             "Your wallet is now being monitored for incoming transfers!\n" +
             "You'll receive notifications for:\n" +
-            "• MATIC transfers\n" +
             "• USDC transfers\n" +
             "• POL transfers\n" +
             "• On Polygon network (Polymarket's primary chain)"

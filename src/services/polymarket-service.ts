@@ -181,20 +181,122 @@ export class PolymarketService {
 
           if (isCacheFresh) {
             console.log("Returning fresh markets data from database");
-            return dbMarkets.map((dbMarket) => ({
-              id: dbMarket.id, // Use the CUID instead of polymarketId
-              question: dbMarket.question,
-              description: dbMarket.description || "",
-              endDate: dbMarket.endDate.toISOString(),
-              volume24h: dbMarket.volume24h,
-              liquidity: dbMarket.liquidity,
-              yesPrice: dbMarket.yesPrice,
-              noPrice: dbMarket.noPrice,
-              priceChange24h: dbMarket.priceChange24h,
-              yesTokenId: dbMarket.yesTokenId, // Changed from tokens.yes
-              noTokenId: dbMarket.noTokenId, // Changed from tokens.no
-              clobTokensIds: dbMarket.clobTokensIds, // Add this field
-            }));
+
+            // Check if cached markets have valid token IDs
+            const marketsWithTokenIds = dbMarkets.filter(
+              (market) =>
+                market.yesTokenId &&
+                market.noTokenId &&
+                market.yesTokenId !== "" &&
+                market.noTokenId !== ""
+            );
+
+            if (marketsWithTokenIds.length === dbMarkets.length) {
+              // All markets have token IDs, return them
+              return dbMarkets.map((dbMarket) => ({
+                id: dbMarket.id, // Use the CUID instead of polymarketId
+                question: dbMarket.question,
+                description: dbMarket.description || "",
+                endDate: dbMarket.endDate.toISOString(),
+                volume24h: dbMarket.volume24h,
+                liquidity: dbMarket.liquidity,
+                yesPrice: dbMarket.yesPrice,
+                noPrice: dbMarket.noPrice,
+                priceChange24h: dbMarket.priceChange24h,
+                yesTokenId: dbMarket.yesTokenId,
+                noTokenId: dbMarket.noTokenId,
+                clobTokensIds: dbMarket.clobTokensIds,
+              }));
+            } else {
+              console.log(
+                `Found ${
+                  dbMarkets.length - marketsWithTokenIds.length
+                } markets without token IDs, enhancing...`
+              );
+
+              // Some markets are missing token IDs, enhance them
+              const marketsToEnhance = dbMarkets.filter(
+                (market) =>
+                  !market.yesTokenId ||
+                  !market.noTokenId ||
+                  market.yesTokenId === "" ||
+                  market.noTokenId === ""
+              );
+
+              // Convert to Market interface for enhancement
+              const marketsForEnhancement = marketsToEnhance.map(
+                (dbMarket) => ({
+                  id: dbMarket.polymarketId,
+                  question: dbMarket.question,
+                  description: dbMarket.description || "",
+                  endDate: dbMarket.endDate.toISOString(),
+                  volume24h: dbMarket.volume24h,
+                  liquidity: dbMarket.liquidity,
+                  yesPrice: dbMarket.yesPrice,
+                  noPrice: dbMarket.noPrice,
+                  priceChange24h: dbMarket.priceChange24h,
+                  yesTokenId: dbMarket.yesTokenId,
+                  noTokenId: dbMarket.noTokenId,
+                  conditionId: dbMarket.conditionId || undefined,
+                  clobTokensIds: dbMarket.clobTokensIds,
+                })
+              );
+
+              // Enhance markets with CLOB data
+              const enhancedMarkets = await this.enhanceMarketsWithClobData(
+                marketsForEnhancement
+              );
+
+              // Update enhanced markets in database
+              for (const enhancedMarket of enhancedMarkets) {
+                try {
+                  await prismaStorageService.upsertMarket({
+                    polymarketId: enhancedMarket.id,
+                    question: enhancedMarket.question,
+                    description: enhancedMarket.description,
+                    endDate: new Date(enhancedMarket.endDate),
+                    volume24h: enhancedMarket.volume24h,
+                    liquidity: enhancedMarket.liquidity,
+                    yesPrice: enhancedMarket.yesPrice,
+                    noPrice: enhancedMarket.noPrice,
+                    priceChange24h: enhancedMarket.priceChange24h || undefined,
+                    yesTokenId: enhancedMarket.yesTokenId,
+                    noTokenId: enhancedMarket.noTokenId,
+                    isActive: true,
+                    isArchived: false,
+                    conditionId: enhancedMarket.conditionId || "",
+                    clobTokensIds: enhancedMarket.clobTokensIds,
+                  });
+                } catch (error) {
+                  console.warn(
+                    `Failed to update enhanced market ${enhancedMarket.id}:`,
+                    error
+                  );
+                }
+              }
+
+              // Return all markets (enhanced + already valid)
+              const allMarkets = [
+                ...enhancedMarkets,
+                ...marketsWithTokenIds.map((dbMarket) => ({
+                  id: dbMarket.polymarketId,
+                  question: dbMarket.question,
+                  description: dbMarket.description || "",
+                  endDate: dbMarket.endDate.toISOString(),
+                  volume24h: dbMarket.volume24h,
+                  liquidity: dbMarket.liquidity,
+                  yesPrice: dbMarket.yesPrice,
+                  noPrice: dbMarket.noPrice,
+                  priceChange24h: dbMarket.priceChange24h,
+                  yesTokenId: dbMarket.yesTokenId,
+                  noTokenId: dbMarket.noTokenId,
+                  conditionId: dbMarket.conditionId || undefined,
+                  clobTokensIds: dbMarket.clobTokensIds,
+                })),
+              ];
+
+              return allMarkets;
+            }
           } else {
             console.log("Database cache is stale, refreshing from APIs...");
           }
