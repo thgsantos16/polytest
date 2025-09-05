@@ -891,8 +891,7 @@ export class TelegramBotService {
         `📊 Market: ${market.question}\n` +
         `🔄 Side: ${side.toUpperCase()}\n` +
         `💰 Amount: $${amount}\n` +
-        `💵 Price: $${price.toFixed(4)}\n` +
-        `💸 Total Cost: $${totalCost.toFixed(2)}\n\n` +
+        `💵 Unit Price: $${price.toFixed(4)}\n` +
         `Please confirm your trade:`,
       {
         chat_id: chatId,
@@ -926,52 +925,46 @@ export class TelegramBotService {
 
     // Give immediate feedback
     await this.bot.answerCallbackQuery(callbackQuery.id, {
-      text: "🔄 Processing trade confirmation...",
+      text: "🔄 Executing trade...",
     });
 
     try {
-      // Get wallet
+      // Get market details
+      const market = await prismaStorageService.getMarketById(marketCuid);
+      if (!market) {
+        await this.bot.sendMessage(chatId, "❌ Market not found.");
+        return;
+      }
+
+      // Get user's wallet
       const wallet = await prismaStorageService.getWalletByTelegramId(
         telegramId
       );
       if (!wallet) {
-        await this.bot.answerCallbackQuery(callbackQuery.id, {
-          text: "❌ No wallet found. Use /start first.",
-        });
+        await this.bot.sendMessage(
+          chatId,
+          "❌ No wallet found. Use /start to create your wallet first."
+        );
         return;
       }
 
-      // Get market details from database using CUID
-      const market = await prismaStorageService.getMarketById(marketCuid);
-
-      if (!market) {
-        await this.bot.answerCallbackQuery(callbackQuery.id, {
-          text: "❌ Market not found.",
-        });
-        return;
-      }
-
-      const tokenId = side === "buy" ? market.yesTokenId : market.noTokenId;
-
-      if (!tokenId) {
-        await this.bot.answerCallbackQuery(callbackQuery.id, {
-          text: "❌ Could not determine token ID.",
-        });
-        return;
-      }
-
-      // Create wallet signer
+      // Get wallet signer
       const signer = await prismaStorageService.getWalletSignerByTelegramId(
         telegramId
       );
       if (!signer) {
-        await this.bot.answerCallbackQuery(callbackQuery.id, {
-          text: "❌ Failed to access wallet.",
-        });
+        await this.bot.sendMessage(chatId, "❌ Failed to access wallet.");
         return;
       }
 
-      // Place order
+      // Determine token ID based on side
+      const tokenId = side === "buy" ? market.yesTokenId : market.noTokenId;
+      if (!tokenId) {
+        await this.bot.sendMessage(chatId, "❌ Could not determine token ID.");
+        return;
+      }
+
+      // Create order details
       const orderDetails = {
         marketId: marketCuid,
         tokenId,
@@ -981,81 +974,40 @@ export class TelegramBotService {
         walletAddress: wallet.walletAddress,
       };
 
-      const result = await polymarketService.placeOrder(
+      // Place the order
+      const result = await polymarketService.placeOrderFromBot(
         orderDetails,
         signer as unknown as WalletClient
       );
 
       if (result.success) {
-        // Save position to database
-        const user = await prismaStorageService.createOrGetUser(telegramId, {
-          telegramId,
-          username: undefined,
-          firstName: undefined,
-          lastName: undefined,
-        });
-        await prismaStorageService.savePosition(
-          { id: user },
-          {
-            userId: user,
-            marketId: marketCuid,
-            tokenId,
-            amount: parseFloat(amount),
-            side: side as "buy" | "sell",
-            price: parseFloat(price),
-          }
-        );
-
-        await this.bot.editMessageText(
-          `✅ **Trade Successful!**\n\n` +
+        await this.bot.sendMessage(
+          chatId,
+          `✅ **Trade Executed Successfully!**\n\n` +
             `📊 Market: ${market.question}\n` +
             `🔄 Side: ${side.toUpperCase()}\n` +
             `💰 Amount: $${amount}\n` +
-            `💵 Price: $${price}\n` +
-            `🆔 Order ID: \`${result.orderId}\``,
-          {
-            chat_id: chatId,
-            message_id: callbackQuery.message?.message_id,
-            reply_markup: {
-              inline_keyboard: [
-                [
-                  {
-                    text: "📊 View Markets",
-                    callback_data: "markets",
-                  },
-                ],
-              ],
-            },
-          }
+            `💵 Unit Price: $${parseFloat(price).toFixed(4)}\n` +
+            `📈 Total Cost: $${(parseFloat(amount) * parseFloat(price)).toFixed(
+              2
+            )}\n` +
+            `🔗 Transaction: ${result.orderId}\n\n` +
+            `Your trade has been submitted to the blockchain!`
         );
       } else {
-        await this.bot.editMessageText(
-          `❌ **Trade Failed**\n\n${result.message}`,
-          {
-            chat_id: chatId,
-            message_id: callbackQuery.message?.message_id,
-            reply_markup: {
-              inline_keyboard: [
-                [
-                  {
-                    text: "🔄 Try Again",
-                    callback_data: "markets",
-                  },
-                ],
-              ],
-            },
-          }
+        await this.bot.sendMessage(
+          chatId,
+          `❌ **Trade Failed**\n\n` +
+            `Error: ${result.message}\n\n` +
+            `Please try again or contact support if the issue persists.`
         );
       }
-
-      await this.bot.answerCallbackQuery(callbackQuery.id, {
-        text: result.success ? "✅ Trade completed!" : "❌ Trade failed",
-      });
     } catch (error) {
-      console.error("Error in handleConfirmTrade:", error);
-      await this.bot.answerCallbackQuery(callbackQuery.id, {
-        text: "❌ Trade failed. Please try again.",
-      });
+      console.error("Error executing trade:", error);
+      await this.bot.sendMessage(
+        chatId,
+        "❌ An error occurred while executing your trade. Please try again."
+      );
     }
   }
 

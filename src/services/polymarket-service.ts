@@ -944,6 +944,150 @@ export class PolymarketService {
     }
   }
 
+  async placeOrderFromBot(
+    orderDetails: OrderDetails,
+    walletClient?: WalletClient
+  ): Promise<OrderResponse> {
+    try {
+      console.log("Creating order...");
+
+      if (!walletClient) {
+        throw new Error("Wallet client is required for order placement");
+      }
+
+      // Convert WalletClient to ethers signer for Polymarket compatibility
+      const [account] = await walletClient.getAddresses();
+      const ethersProvider = new Web3Provider(walletClient.transport);
+      const signer = ethersProvider.getSigner();
+
+      // Create the main client first without credentials
+      const orderClient = new ClobClient(
+        this.host,
+        this.chainId,
+        signer,
+        undefined, // No creds initially
+        0, // Browser wallet signature type
+        account // Funder address
+      );
+
+      // Now create or derive API key using the properly initialized client
+      const creds = await orderClient.createOrDeriveApiKey();
+
+      // Recreate the client with the credentials
+      const finalClient = new ClobClient(
+        this.host,
+        this.chainId,
+        signer,
+        creds,
+        0, // Browser wallet signature type
+        account // Funder address
+      );
+
+      // Validate order details
+      if (!orderDetails.tokenId) {
+        throw new Error("Token ID is required for order placement");
+      }
+
+      if (orderDetails.price <= 0 || orderDetails.size <= 0) {
+        throw new Error("Price and size must be greater than 0");
+      }
+
+      const allowances = await finalClient.getBalanceAllowance({
+        asset_type: AssetType.COLLATERAL,
+      });
+      console.log("Allowances:", allowances);
+
+      console.log("Checking USDC allowance...");
+
+      // Check and approve USDC allowance
+      try {
+        await this.checkAndApproveUSDCAllowance(
+          signer,
+          account,
+          orderDetails.size
+        );
+      } catch (allowanceError) {
+        console.warn("Allowance check/update failed:", allowanceError);
+        // Continue with order placement - user might need to approve manually
+      }
+
+      // Create market order object (like the Python example)
+      const marketOrder = {
+        tokenID: orderDetails.tokenId,
+        amount: orderDetails.size, // Use the USD amount directly
+        side: orderDetails.side === "buy" ? Side.BUY : Side.SELL,
+        order_type: OrderType.FOK, // Use FOK like the Python example
+      };
+
+      console.log(
+        "Requesting wallet signature for market order...",
+        marketOrder
+      );
+      const signedOrder = await finalClient.createMarketOrder(marketOrder);
+      console.log("Market order signed successfully", signedOrder);
+
+      // Post the order to the exchange
+      console.log("Posting market order to exchange...");
+      const response = await finalClient.postOrder(signedOrder, OrderType.FOK);
+
+      console.log("Order posted successfully", response);
+
+      // Check if order was successful
+      if (response && response.success !== false) {
+        return {
+          success: true,
+          message: `Successfully placed ${orderDetails.side} order for ${
+            orderDetails.size
+          } tokens at $${orderDetails.price.toFixed(4)} each`,
+          orderId: response.orderHash || response.orderId || "unknown",
+          status: response.status || "placed",
+        };
+      } else {
+        const errorMessage =
+          response?.error || response?.message || "Unknown error";
+        return {
+          success: false,
+          message: `Failed to place order: ${errorMessage}`,
+          orderId: response?.orderHash || response?.orderId || "unknown",
+          status: response?.status || "failed",
+        };
+      }
+    } catch (error) {
+      console.error("Order placement error:", error);
+
+      // Provide more specific error messages
+      if (error instanceof Error) {
+        if (error.message.includes("User rejected")) {
+          return {
+            success: false,
+            message: "Order cancelled by user",
+          };
+        } else if (error.message.includes("insufficient")) {
+          return {
+            success: false,
+            message: "Insufficient balance for this order",
+          };
+        } else if (error.message.includes("network")) {
+          return {
+            success: false,
+            message:
+              "Network error. Please check your connection and try again.",
+          };
+        }
+      }
+
+      return {
+        success: false,
+        message:
+          error instanceof Error
+            ? error.message.includes("Signer is needed")
+              ? "Wallet signing is required for order placement. Please ensure your wallet is connected and try again."
+              : error.message
+            : "Failed to place order. Please try again.",
+      };
+    }
+  }
+
   // Update cache methods to work with database
   async clearCache(): Promise<void> {
     try {
