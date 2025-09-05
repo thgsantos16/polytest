@@ -349,11 +349,11 @@ export class TelegramBotService {
       // Create inline keyboard for each market
       const keyboard = markets.slice(0, 5).map((market) => [
         {
-          text: `📈 Buy ${market.question.slice(0, 15)}...`,
+          text: `📈 Buy ${market.question.slice(0, 20)}...`,
           callback_data: `t_${market.cuid}_b`, // Use .cuid instead of .id
         },
         {
-          text: `📉 Sell ${market.question.slice(0, 15)}...`,
+          text: `📉 Sell ${market.question.slice(0, 20)}...`,
           callback_data: `t_${market.cuid}_s`, // Use .cuid instead of .id
         },
       ]);

@@ -3418,6 +3418,7 @@ export namespace Prisma {
     yesTokenId: string | null
     noTokenId: string | null
     conditionId: string | null
+    clobTokensIds: string | null
     isActive: boolean | null
     isArchived: boolean | null
     lastUpdated: Date | null
@@ -3438,6 +3439,7 @@ export namespace Prisma {
     yesTokenId: string | null
     noTokenId: string | null
     conditionId: string | null
+    clobTokensIds: string | null
     isActive: boolean | null
     isArchived: boolean | null
     lastUpdated: Date | null
@@ -3458,6 +3460,7 @@ export namespace Prisma {
     yesTokenId: number
     noTokenId: number
     conditionId: number
+    clobTokensIds: number
     isActive: number
     isArchived: number
     lastUpdated: number
@@ -3496,6 +3499,7 @@ export namespace Prisma {
     yesTokenId?: true
     noTokenId?: true
     conditionId?: true
+    clobTokensIds?: true
     isActive?: true
     isArchived?: true
     lastUpdated?: true
@@ -3516,6 +3520,7 @@ export namespace Prisma {
     yesTokenId?: true
     noTokenId?: true
     conditionId?: true
+    clobTokensIds?: true
     isActive?: true
     isArchived?: true
     lastUpdated?: true
@@ -3536,6 +3541,7 @@ export namespace Prisma {
     yesTokenId?: true
     noTokenId?: true
     conditionId?: true
+    clobTokensIds?: true
     isActive?: true
     isArchived?: true
     lastUpdated?: true
@@ -3643,6 +3649,7 @@ export namespace Prisma {
     yesTokenId: string
     noTokenId: string
     conditionId: string | null
+    clobTokensIds: string | null
     isActive: boolean
     isArchived: boolean
     lastUpdated: Date
@@ -3682,6 +3689,7 @@ export namespace Prisma {
     yesTokenId?: boolean
     noTokenId?: boolean
     conditionId?: boolean
+    clobTokensIds?: boolean
     isActive?: boolean
     isArchived?: boolean
     lastUpdated?: boolean
@@ -3704,6 +3712,7 @@ export namespace Prisma {
     yesTokenId?: boolean
     noTokenId?: boolean
     conditionId?: boolean
+    clobTokensIds?: boolean
     isActive?: boolean
     isArchived?: boolean
     lastUpdated?: boolean
@@ -3724,6 +3733,7 @@ export namespace Prisma {
     yesTokenId?: boolean
     noTokenId?: boolean
     conditionId?: boolean
+    clobTokensIds?: boolean
     isActive?: boolean
     isArchived?: boolean
     lastUpdated?: boolean
@@ -3755,6 +3765,7 @@ export namespace Prisma {
       yesTokenId: string
       noTokenId: string
       conditionId: string | null
+      clobTokensIds: string | null
       isActive: boolean
       isArchived: boolean
       lastUpdated: Date
@@ -4166,6 +4177,7 @@ export namespace Prisma {
     readonly yesTokenId: FieldRef<"Market", 'String'>
     readonly noTokenId: FieldRef<"Market", 'String'>
     readonly conditionId: FieldRef<"Market", 'String'>
+    readonly clobTokensIds: FieldRef<"Market", 'String'>
     readonly isActive: FieldRef<"Market", 'Boolean'>
     readonly isArchived: FieldRef<"Market", 'Boolean'>
     readonly lastUpdated: FieldRef<"Market", 'DateTime'>
@@ -7583,6 +7595,7 @@ export namespace Prisma {
     yesTokenId: 'yesTokenId',
     noTokenId: 'noTokenId',
     conditionId: 'conditionId',
+    clobTokensIds: 'clobTokensIds',
     isActive: 'isActive',
     isArchived: 'isArchived',
     lastUpdated: 'lastUpdated',
@@ -7897,6 +7910,7 @@ export namespace Prisma {
     yesTokenId?: StringFilter<"Market"> | string
     noTokenId?: StringFilter<"Market"> | string
     conditionId?: StringNullableFilter<"Market"> | string | null
+    clobTokensIds?: StringNullableFilter<"Market"> | string | null
     isActive?: BoolFilter<"Market"> | boolean
     isArchived?: BoolFilter<"Market"> | boolean
     lastUpdated?: DateTimeFilter<"Market"> | Date | string
@@ -7918,6 +7932,7 @@ export namespace Prisma {
     yesTokenId?: SortOrder
     noTokenId?: SortOrder
     conditionId?: SortOrderInput | SortOrder
+    clobTokensIds?: SortOrderInput | SortOrder
     isActive?: SortOrder
     isArchived?: SortOrder
     lastUpdated?: SortOrder
@@ -7942,6 +7957,7 @@ export namespace Prisma {
     yesTokenId?: StringFilter<"Market"> | string
     noTokenId?: StringFilter<"Market"> | string
     conditionId?: StringNullableFilter<"Market"> | string | null
+    clobTokensIds?: StringNullableFilter<"Market"> | string | null
     isActive?: BoolFilter<"Market"> | boolean
     isArchived?: BoolFilter<"Market"> | boolean
     lastUpdated?: DateTimeFilter<"Market"> | Date | string
@@ -7963,6 +7979,7 @@ export namespace Prisma {
     yesTokenId?: SortOrder
     noTokenId?: SortOrder
     conditionId?: SortOrderInput | SortOrder
+    clobTokensIds?: SortOrderInput | SortOrder
     isActive?: SortOrder
     isArchived?: SortOrder
     lastUpdated?: SortOrder
@@ -7991,6 +8008,7 @@ export namespace Prisma {
     yesTokenId?: StringWithAggregatesFilter<"Market"> | string
     noTokenId?: StringWithAggregatesFilter<"Market"> | string
     conditionId?: StringNullableWithAggregatesFilter<"Market"> | string | null
+    clobTokensIds?: StringNullableWithAggregatesFilter<"Market"> | string | null
     isActive?: BoolWithAggregatesFilter<"Market"> | boolean
     isArchived?: BoolWithAggregatesFilter<"Market"> | boolean
     lastUpdated?: DateTimeWithAggregatesFilter<"Market"> | Date | string
@@ -8407,6 +8425,7 @@ export namespace Prisma {
     yesTokenId: string
     noTokenId: string
     conditionId?: string | null
+    clobTokensIds?: string | null
     isActive?: boolean
     isArchived?: boolean
     lastUpdated?: Date | string
@@ -8428,6 +8447,7 @@ export namespace Prisma {
     yesTokenId: string
     noTokenId: string
     conditionId?: string | null
+    clobTokensIds?: string | null
     isActive?: boolean
     isArchived?: boolean
     lastUpdated?: Date | string
@@ -8449,6 +8469,7 @@ export namespace Prisma {
     yesTokenId?: StringFieldUpdateOperationsInput | string
     noTokenId?: StringFieldUpdateOperationsInput | string
     conditionId?: NullableStringFieldUpdateOperationsInput | string | null
+    clobTokensIds?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     isArchived?: BoolFieldUpdateOperationsInput | boolean
     lastUpdated?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -8470,6 +8491,7 @@ export namespace Prisma {
     yesTokenId?: StringFieldUpdateOperationsInput | string
     noTokenId?: StringFieldUpdateOperationsInput | string
     conditionId?: NullableStringFieldUpdateOperationsInput | string | null
+    clobTokensIds?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     isArchived?: BoolFieldUpdateOperationsInput | boolean
     lastUpdated?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -8491,6 +8513,7 @@ export namespace Prisma {
     yesTokenId: string
     noTokenId: string
     conditionId?: string | null
+    clobTokensIds?: string | null
     isActive?: boolean
     isArchived?: boolean
     lastUpdated?: Date | string
@@ -8511,6 +8534,7 @@ export namespace Prisma {
     yesTokenId?: StringFieldUpdateOperationsInput | string
     noTokenId?: StringFieldUpdateOperationsInput | string
     conditionId?: NullableStringFieldUpdateOperationsInput | string | null
+    clobTokensIds?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     isArchived?: BoolFieldUpdateOperationsInput | boolean
     lastUpdated?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -8531,6 +8555,7 @@ export namespace Prisma {
     yesTokenId?: StringFieldUpdateOperationsInput | string
     noTokenId?: StringFieldUpdateOperationsInput | string
     conditionId?: NullableStringFieldUpdateOperationsInput | string | null
+    clobTokensIds?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     isArchived?: BoolFieldUpdateOperationsInput | boolean
     lastUpdated?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -9021,6 +9046,7 @@ export namespace Prisma {
     yesTokenId?: SortOrder
     noTokenId?: SortOrder
     conditionId?: SortOrder
+    clobTokensIds?: SortOrder
     isActive?: SortOrder
     isArchived?: SortOrder
     lastUpdated?: SortOrder
@@ -9049,6 +9075,7 @@ export namespace Prisma {
     yesTokenId?: SortOrder
     noTokenId?: SortOrder
     conditionId?: SortOrder
+    clobTokensIds?: SortOrder
     isActive?: SortOrder
     isArchived?: SortOrder
     lastUpdated?: SortOrder
@@ -9069,6 +9096,7 @@ export namespace Prisma {
     yesTokenId?: SortOrder
     noTokenId?: SortOrder
     conditionId?: SortOrder
+    clobTokensIds?: SortOrder
     isActive?: SortOrder
     isArchived?: SortOrder
     lastUpdated?: SortOrder
@@ -10189,6 +10217,7 @@ export namespace Prisma {
     yesTokenId: string
     noTokenId: string
     conditionId?: string | null
+    clobTokensIds?: string | null
     isActive?: boolean
     isArchived?: boolean
     lastUpdated?: Date | string
@@ -10209,6 +10238,7 @@ export namespace Prisma {
     yesTokenId: string
     noTokenId: string
     conditionId?: string | null
+    clobTokensIds?: string | null
     isActive?: boolean
     isArchived?: boolean
     lastUpdated?: Date | string
@@ -10284,6 +10314,7 @@ export namespace Prisma {
     yesTokenId?: StringFieldUpdateOperationsInput | string
     noTokenId?: StringFieldUpdateOperationsInput | string
     conditionId?: NullableStringFieldUpdateOperationsInput | string | null
+    clobTokensIds?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     isArchived?: BoolFieldUpdateOperationsInput | boolean
     lastUpdated?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -10304,6 +10335,7 @@ export namespace Prisma {
     yesTokenId?: StringFieldUpdateOperationsInput | string
     noTokenId?: StringFieldUpdateOperationsInput | string
     conditionId?: NullableStringFieldUpdateOperationsInput | string | null
+    clobTokensIds?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     isArchived?: BoolFieldUpdateOperationsInput | boolean
     lastUpdated?: DateTimeFieldUpdateOperationsInput | Date | string

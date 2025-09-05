@@ -158,6 +158,7 @@ exports.Prisma.MarketScalarFieldEnum = {
   yesTokenId: 'yesTokenId',
   noTokenId: 'noTokenId',
   conditionId: 'conditionId',
+  clobTokensIds: 'clobTokensIds',
   isActive: 'isActive',
   isArchived: 'isArchived',
   lastUpdated: 'lastUpdated',

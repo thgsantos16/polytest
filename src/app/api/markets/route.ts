@@ -6,19 +6,19 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const limit = parseInt(searchParams.get("limit") || "5");
+    const offset = parseInt(searchParams.get("offset") || "0");
 
-    // If no database markets, fallback to Gamma API
+    // Always use Gamma API
     const gammaApiUrl = "https://gamma-api.polymarket.com/markets";
     const params = new URLSearchParams({
-      active: "true",
       closed: "false",
       limit: limit.toString(),
+      offset: offset.toString(),
       ascending: "false",
-      order: "createdAt",
+      order: "volume",
     });
 
     const finalUrl = `${gammaApiUrl}?${params}`;
-    console.log("Fallback to Gamma API:", finalUrl);
 
     const response = await fetch(finalUrl);
 
@@ -37,7 +37,6 @@ export async function GET(request: NextRequest) {
         (market: { active: boolean; archived: boolean }) =>
           market.active && !market.archived
       )
-      .slice(0, limit)
       .map(
         (market: {
           id: string | number;
@@ -53,6 +52,7 @@ export async function GET(request: NextRequest) {
           outcomePrices?: string | null;
           outcomes?: string | null;
           conditionId?: string | null;
+          clobTokenIds?: string | null;
         }) => ({
           id: market.id.toString(),
           cuid: market.id.toString(), // Use original ID as CUID for now
@@ -63,14 +63,15 @@ export async function GET(request: NextRequest) {
             market.endDate || market.end_date || new Date().toISOString(),
           volume24h: market.volume24hr || market.volume || 0,
           liquidity: Number(market.liquidity) || 0,
-          yesPrice: 0.5, // Default fallback
-          noPrice: 0.5, // Default fallback
+          yesPrice: 0, // Set to 0 when no token IDs available
+          noPrice: 0, // Set to 0 when no token IDs available
           priceChange24h: market.oneDayPriceChange || null,
           yesTokenId: "", // Gamma API doesn't provide token IDs
           noTokenId: "", // Gamma API doesn't provide token IDs
           outcomePrices: market.outcomePrices || null,
           outcomes: market.outcomes || null,
           conditionId: market.conditionId || null,
+          clobTokensIds: market.clobTokenIds || null,
         })
       );
 

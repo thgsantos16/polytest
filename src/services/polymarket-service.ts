@@ -28,6 +28,7 @@ export interface Market {
   conditionId?: string;
   outcomes?: string | null;
   outcomePrices?: string | null;
+  clobTokensIds?: string | null; // Add this field
 }
 
 export interface PolymarketMarket {
@@ -156,319 +157,413 @@ export class PolymarketService {
     order: string = "createdAt",
     ascending: boolean = false
   ): Promise<Market[]> {
-    try {
-      console.log("Fetching markets from database...");
+    const maxRetries = 2;
+    let attempt = 0;
 
-      // First try to get markets from database
-      const dbMarkets = await prismaStorageService.getActiveMarkets(20);
-
-      if (dbMarkets.length > 0) {
-        // Check if cache is still fresh (within 5 minutes)
-        const now = new Date();
-        const isCacheFresh = dbMarkets.every(
-          (market) =>
-            now.getTime() - market.lastUpdated.getTime() < this.CACHE_TTL
-        );
-
-        if (isCacheFresh) {
-          console.log("Returning fresh markets data from database");
-          return dbMarkets.map((dbMarket) => ({
-            id: dbMarket.id, // Use the CUID instead of polymarketId
-            question: dbMarket.question,
-            description: dbMarket.description || "",
-            endDate: dbMarket.endDate.toISOString(),
-            volume24h: dbMarket.volume24h,
-            liquidity: dbMarket.liquidity,
-            yesPrice: dbMarket.yesPrice,
-            noPrice: dbMarket.noPrice,
-            priceChange24h: dbMarket.priceChange24h,
-            yesTokenId: dbMarket.yesTokenId, // Changed from tokens.yes
-            noTokenId: dbMarket.noTokenId, // Changed from tokens.no
-          }));
-        } else {
-          console.log("Database cache is stale, refreshing from APIs...");
-        }
-      }
-
-      // Fetch fresh data from APIs and update database
-      console.log("Fetching fresh markets data from APIs...");
-
-      // Try Gamma API first, fallback to CLOB API if CORS issues
-      let data: GammaApiMarket[] = [];
-
+    while (attempt <= maxRetries) {
       try {
-        // Use local API route to avoid CORS issues
-        const appUrl = process.env.NEXT_PUBLIC_APP_URL;
-        const apiUrl = appUrl + "/api/markets";
-        const params = new URLSearchParams({
-          active: "true",
-          closed: "false",
-          limit: limit.toString(),
-          order,
-          ascending: ascending.toString(),
-        });
-
-        const finalUrl = `${apiUrl}?${params}`;
-        console.log("Final URL:", finalUrl);
-
-        const response = await fetch(finalUrl);
-
-        if (!response.ok) {
-          throw new Error(`Failed to fetch markets: ${response.status}`);
-        }
-
-        data = await response.json();
-        console.log(`Gamma API: ${data?.length || 0} markets received`, data);
-
-        // Transform Gamma API response to our Market interface
-        const markets: Market[] = data
-          .map((market: GammaApiMarket) => {
-            const endDate =
-              market.endDate || market.end_date || new Date().toISOString();
-
-            // Parse price data from the API
-            let yesPrice = 0.5; // Default fallback
-            let noPrice = 0.5; // Default fallback
-
-            if (market.outcomePrices) {
-              try {
-                // outcomePrices is a JSON string like "[\"0.04\", \"0.96\"]"
-                const prices = JSON.parse(market.outcomePrices);
-                if (prices && prices.length >= 2) {
-                  yesPrice = parseFloat(prices[0]) || 0.5;
-                  noPrice = parseFloat(prices[1]) || 0.5;
-                }
-              } catch (e) {
-                console.warn(
-                  `Failed to parse outcomePrices for market ${market.id}:`,
-                  e
-                );
-              }
-            } else if (
-              market.lastTradePrice !== undefined &&
-              market.lastTradePrice > 0
-            ) {
-              yesPrice = market.lastTradePrice;
-              noPrice = 1 - yesPrice;
-            }
-
-            return {
-              id: market.id.toString(),
-              question: market.question || market.slug || `Market ${market.id}`,
-              description:
-                market.description || market.slug || `Market ${market.id}`,
-              endDate: endDate,
-              volume24h: market.volume24hr || market.volume || 0,
-              liquidity: market.liquidity || 0,
-              yesPrice: yesPrice,
-              noPrice: noPrice,
-              priceChange24h: market.oneDayPriceChange,
-              outcomePrices: market.outcomePrices,
-              outcomes: market.outcomes,
-              conditionId: market.conditionId,
-              yesTokenId: "", // Gamma API doesn't provide token IDs directly
-              noTokenId: "", // We'll need to get these from CLOB API if needed
-            };
-          })
-          .sort(
-            (a: Market, b: Market) =>
-              new Date(b.endDate).getTime() - new Date(a.endDate).getTime()
-          ); // Sort by end date, newest first
-
-        console.log(`Processed ${markets.length} markets from Gamma API`);
-
-        // Enhance Gamma API markets that have conditionId with CLOB data
-        const marketsWithClobIds = markets.filter((market) => {
-          const gammaMarket = data.find((gm) => gm.id.toString() === market.id);
-          return gammaMarket?.conditionId && gammaMarket.conditionId !== "";
-        });
-
         console.log(
-          `Found ${marketsWithClobIds.length} markets with CLOB condition IDs`
+          `Fetching markets from database (attempt ${attempt + 1}/${
+            maxRetries + 1
+          })...`
         );
 
-        if (marketsWithClobIds.length > 0) {
-          // Enhance markets with CLOB data
-          const enhancedMarkets = await this.enhanceMarketsWithClobData(
-            marketsWithClobIds,
-            data
+        // First try to get markets from database
+        const dbMarkets = await prismaStorageService.getActiveMarkets(20);
+
+        if (dbMarkets.length > 0) {
+          // Check if cache is still fresh (within 5 minutes)
+          const now = new Date();
+          const isCacheFresh = dbMarkets.every(
+            (market) =>
+              now.getTime() - market.lastUpdated.getTime() < this.CACHE_TTL
           );
 
-          // Merge enhanced markets with regular markets
-          const enhancedMarketIds = new Set(enhancedMarkets.map((m) => m.id));
-          const regularMarkets = markets.filter(
-            (m) => !enhancedMarketIds.has(m.id)
-          );
+          if (isCacheFresh) {
+            console.log("Returning fresh markets data from database");
+            return dbMarkets.map((dbMarket) => ({
+              id: dbMarket.id, // Use the CUID instead of polymarketId
+              question: dbMarket.question,
+              description: dbMarket.description || "",
+              endDate: dbMarket.endDate.toISOString(),
+              volume24h: dbMarket.volume24h,
+              liquidity: dbMarket.liquidity,
+              yesPrice: dbMarket.yesPrice,
+              noPrice: dbMarket.noPrice,
+              priceChange24h: dbMarket.priceChange24h,
+              yesTokenId: dbMarket.yesTokenId, // Changed from tokens.yes
+              noTokenId: dbMarket.noTokenId, // Changed from tokens.no
+              clobTokensIds: dbMarket.clobTokensIds, // Add this field
+            }));
+          } else {
+            console.log("Database cache is stale, refreshing from APIs...");
+          }
+        }
 
-          const finalMarkets = [...enhancedMarkets, ...regularMarkets];
-          console.log(
-            `Markets: ${enhancedMarkets.length} enhanced, ${regularMarkets.length} regular`
-          );
+        // Fetch fresh data from APIs and update database
+        console.log(
+          `Fetching fresh markets data from APIs (attempt ${attempt + 1})...`
+        );
 
-          // After getting markets from APIs, store them in database
-          const storedMarketIds: { marketId: string; cuid: string }[] = [];
+        // Try Gamma API first, fallback to CLOB API if CORS issues
+        let data: GammaApiMarket[] = [];
 
-          for (const market of finalMarkets) {
-            try {
-              // Find the original polymarketId from the market data
-              // This might need adjustment based on how you're getting the polymarketId
-              const polymarketId = market.id; // Assuming this is the original ID
+        try {
+          // Use local API route to avoid CORS issues
+          const appUrl = process.env.NEXT_PUBLIC_APP_URL;
+          const apiUrl = appUrl + "/api/markets";
+          const params = new URLSearchParams({
+            active: "true",
+            closed: "false",
+            limit: limit.toString(),
+            order,
+            ascending: ascending.toString(),
+            offset: (limit * attempt).toString(),
+          });
 
-              const storedId = await prismaStorageService.upsertMarket({
-                polymarketId,
-                question: market.question,
-                description: market.description,
-                endDate: new Date(market.endDate),
-                volume24h: market.volume24h,
-                liquidity: Number(market.liquidity),
-                yesPrice: market.yesPrice,
-                noPrice: market.noPrice,
-                priceChange24h: market.priceChange24h || undefined,
-                yesTokenId: market.yesTokenId, // Changed from tokens.yes
-                noTokenId: market.noTokenId, // Changed from tokens.no
-                isActive: true,
-                isArchived: false,
-                conditionId: market.conditionId || "",
-              });
+          const finalUrl = `${apiUrl}?${params}`;
+          console.log("Final URL:", finalUrl);
 
-              storedMarketIds.push({
-                marketId: market.id,
-                cuid: storedId,
-              });
-            } catch (error) {
-              console.warn(`Failed to store market ${market.id}:`, error);
-            }
+          const response = await fetch(finalUrl);
+
+          if (!response.ok) {
+            throw new Error(`Failed to fetch markets: ${response.status}`);
           }
 
-          // Return markets with CUIDs instead of the original IDs
-          const marketsWithCUIDs = finalMarkets.map((market) => ({
-            ...market,
-            id: market.id, // Keep original Polymarket ID
-            cuid: storedMarketIds.find((m) => m.marketId === market.id)?.cuid, // Add CUID as separate property
-          }));
+          data = await response.json();
+          console.log(`Gamma API: ${data?.length || 0} markets received`);
+
+          // Transform Gamma API response to our Market interface
+          const markets: Market[] = data
+            .map((market: GammaApiMarket) => {
+              const endDate =
+                market.endDate || market.end_date || new Date().toISOString();
+
+              // Parse price data from the API
+              let yesPrice = 0; // Set to 0 when no token IDs available
+              let noPrice = 0; // Set to 0 when no token IDs available
+
+              if (market.outcomePrices) {
+                try {
+                  // outcomePrices is a JSON string like "[\"0.04\", \"0.96\"]"
+                  const prices = JSON.parse(market.outcomePrices);
+                  if (prices && prices.length >= 2) {
+                    yesPrice = parseFloat(prices[0]) || 0;
+                    noPrice = parseFloat(prices[1]) || 0;
+                  }
+                } catch (e) {
+                  console.warn(
+                    `Failed to parse outcomePrices for market ${market.id}:`,
+                    e
+                  );
+                }
+              } else if (
+                market.lastTradePrice !== undefined &&
+                market.lastTradePrice > 0
+              ) {
+                yesPrice = market.lastTradePrice;
+                noPrice = 1 - yesPrice;
+              }
+
+              return {
+                id: market.id.toString(),
+                question:
+                  market.question || market.slug || `Market ${market.id}`,
+                description:
+                  market.description || market.slug || `Market ${market.id}`,
+                endDate: endDate,
+                volume24h: market.volume24hr || market.volume || 0,
+                liquidity: market.liquidity || 0,
+                yesPrice: yesPrice,
+                noPrice: noPrice,
+                priceChange24h: market.oneDayPriceChange,
+                outcomePrices: market.outcomePrices,
+                outcomes: market.outcomes,
+                conditionId: market.conditionId,
+                yesTokenId: "", // Gamma API doesn't provide token IDs directly
+                noTokenId: "", // We'll need to get these from CLOB API if needed
+                clobTokensIds: null, // Gamma API doesn't provide this directly
+              };
+            })
+            .sort(
+              (a: Market, b: Market) =>
+                new Date(b.endDate).getTime() - new Date(a.endDate).getTime()
+            ); // Sort by end date, newest first
+
+          console.log(`Processed ${markets.length} markets from Gamma API`);
+
+          // Enhance Gamma API markets that have conditionId with CLOB data
+          const marketsWithClobIds = markets.filter((market) => {
+            const gammaMarket = data.find(
+              (gm) => gm.id.toString() === market.id
+            );
+            return gammaMarket?.conditionId && gammaMarket.conditionId !== "";
+          });
 
           console.log(
-            `Markets with CUIDs: ${marketsWithCUIDs.length} markets received`,
-            marketsWithCUIDs
+            `Found ${marketsWithClobIds.length} markets with CLOB condition IDs`
           );
 
-          // Make sure to return this instead of the original markets
-          return marketsWithCUIDs.slice(0, 20);
-        } else {
-          console.log("No CLOB condition IDs found, trying CLOB API fallback");
-          // Try to get markets directly from CLOB API as fallback
-          try {
-            const marketClient = new ClobClient(this.host, this.chainId);
-            const response = await marketClient.getMarkets("");
+          if (marketsWithClobIds.length > 0) {
+            // Enhance markets with CLOB data
+            const enhancedMarkets = await this.enhanceMarketsWithClobData(
+              marketsWithClobIds,
+              data
+            );
 
-            if (response && response.data) {
-              const clobMarkets: Market[] = response.data
-                .filter(
-                  (market: PolymarketMarket) =>
-                    market.active && !market.archived
-                )
-                .map((market: PolymarketMarket) => {
-                  const yesToken = market.tokens.find(
-                    (token) =>
-                      token.outcome.toLowerCase().includes("yes") ||
-                      token.outcome.toLowerCase().includes("true")
-                  );
-                  const noToken = market.tokens.find(
-                    (token) =>
-                      token.outcome.toLowerCase().includes("no") ||
-                      token.outcome.toLowerCase().includes("false")
-                  );
+            // Merge enhanced markets with regular markets
+            const enhancedMarketIds = new Set(enhancedMarkets.map((m) => m.id));
+            const regularMarkets = markets.filter(
+              (m) => !enhancedMarketIds.has(m.id)
+            );
 
-                  return {
-                    id: market.condition_id,
-                    question: market.question,
-                    description: `${market.category} - ${market.question}`,
-                    endDate: market.end_date_iso,
-                    volume24h: 0,
-                    liquidity: 0,
-                    yesPrice: 0.5,
-                    noPrice: 0.5,
-                    yesTokenId: yesToken?.token_id || "",
-                    noTokenId: noToken?.token_id || "",
-                  };
-                })
-                .filter((market) => market.yesTokenId && market.noTokenId)
-                .slice(0, 20);
+            const finalMarkets = [...enhancedMarkets, ...regularMarkets];
+            console.log(
+              `Markets: ${enhancedMarkets.length} enhanced, ${regularMarkets.length} regular`
+            );
 
+            // Check if we have enough markets with valid tokens
+            const validMarkets = finalMarkets.filter(
+              (market) =>
+                market.yesTokenId &&
+                market.noTokenId &&
+                market.yesTokenId !== "" &&
+                market.noTokenId !== "" &&
+                market.yesPrice > 0 && // Only include markets with real prices
+                market.noPrice > 0
+            );
+
+            console.log(
+              `Valid markets with tokens and prices: ${validMarkets.length}/${finalMarkets.length}`
+            );
+
+            // If we don't have enough valid markets and we have retries left, try again
+            if (validMarkets.length < limit && attempt < maxRetries) {
               console.log(
-                `Using ${clobMarkets.length} CLOB API markets as fallback`
+                `Not enough valid markets (${validMarkets.length}/${limit}), retrying...`
               );
-              return clobMarkets;
+              attempt++;
+              continue;
             }
-          } catch (clobError) {
-            console.log("CLOB API fallback also failed:", clobError);
+
+            // After getting markets from APIs, store them in database
+            const storedMarketIds: { marketId: string; cuid: string }[] = [];
+
+            for (const market of finalMarkets) {
+              try {
+                // Find the original polymarketId from the market data
+                // This might need adjustment based on how you're getting the polymarketId
+                const polymarketId = market.id; // Assuming this is the original ID
+
+                const storedId = await prismaStorageService.upsertMarket({
+                  polymarketId,
+                  question: market.question,
+                  description: market.description,
+                  endDate: new Date(market.endDate),
+                  volume24h: market.volume24h,
+                  liquidity: Number(market.liquidity),
+                  yesPrice: market.yesPrice,
+                  noPrice: market.noPrice,
+                  priceChange24h: market.priceChange24h || undefined,
+                  yesTokenId: market.yesTokenId, // Changed from tokens.yes
+                  noTokenId: market.noTokenId, // Changed from tokens.no
+                  isActive: true,
+                  isArchived: false,
+                  conditionId: market.conditionId || "",
+                  clobTokensIds: market.clobTokensIds || undefined, // Store this field
+                });
+
+                storedMarketIds.push({
+                  marketId: market.id,
+                  cuid: storedId,
+                });
+              } catch (error) {
+                console.warn(`Failed to store market ${market.id}:`, error);
+              }
+            }
+
+            // Return markets with CUIDs instead of the original IDs
+            const marketsWithCUIDs = finalMarkets.map((market) => ({
+              ...market,
+              id: market.id, // Keep original Polymarket ID
+              cuid: storedMarketIds.find((m) => m.marketId === market.id)?.cuid, // Add CUID as separate property
+            }));
+
+            console.log(
+              `Markets with CUIDs: ${marketsWithCUIDs.length} markets received`
+            );
+
+            // Make sure to return this instead of the original markets
+            return marketsWithCUIDs.slice(0, 20);
+          } else {
+            console.log(
+              "No CLOB condition IDs found, trying CLOB API fallback"
+            );
+            // Try to get markets directly from CLOB API as fallback
+            try {
+              const marketClient = new ClobClient(this.host, this.chainId);
+              const response = await marketClient.getMarkets("");
+
+              if (response && response.data) {
+                const clobMarkets: Market[] = response.data
+                  .filter(
+                    (market: PolymarketMarket) =>
+                      market.active && !market.archived
+                  )
+                  .map((market: PolymarketMarket) => {
+                    const yesToken = market.tokens.find(
+                      (token) =>
+                        token.outcome.toLowerCase().includes("yes") ||
+                        token.outcome.toLowerCase().includes("true")
+                    );
+                    const noToken = market.tokens.find(
+                      (token) =>
+                        token.outcome.toLowerCase().includes("no") ||
+                        token.outcome.toLowerCase().includes("false")
+                    );
+
+                    return {
+                      id: market.condition_id,
+                      question: market.question,
+                      description: `${market.category} - ${market.question}`,
+                      endDate: market.end_date_iso,
+                      volume24h: 0,
+                      liquidity: 0,
+                      yesPrice: 0, // Set to 0 when no token IDs available
+                      noPrice: 0, // Set to 0 when no token IDs available
+                      yesTokenId: yesToken?.token_id || "",
+                      noTokenId: noToken?.token_id || "",
+                      clobTokensIds: null, // CLOB API doesn't provide this directly
+                    };
+                  })
+                  .filter((market) => market.yesTokenId && market.noTokenId)
+                  .slice(0, 20);
+
+                console.log(
+                  `Using ${clobMarkets.length} CLOB API markets as fallback`
+                );
+                return clobMarkets;
+              }
+            } catch (clobError) {
+              console.log("CLOB API fallback also failed:", clobError);
+            }
+
+            console.log("Returning Gamma API markets without enhancement");
+            return markets.slice(0, 20);
+          }
+        } catch (gammaError) {
+          console.log(
+            "Gamma API failed, falling back to CLOB API:",
+            gammaError
+          );
+
+          // Fallback to CLOB API
+          const marketClient = new ClobClient(this.host, this.chainId);
+          const response = await marketClient.getMarkets("");
+
+          if (!response || !response.data) {
+            throw new Error("Failed to fetch markets from CLOB API");
           }
 
-          console.log("Returning Gamma API markets without enhancement");
-          return markets.slice(0, 20);
-        }
-      } catch (gammaError) {
-        console.log("Gamma API failed, falling back to CLOB API:", gammaError);
+          console.log(
+            `CLOB API: ${response.data?.length || 0} markets received`
+          );
 
-        // Fallback to CLOB API
-        const marketClient = new ClobClient(this.host, this.chainId);
-        const response = await marketClient.getMarkets("");
+          // Transform CLOB API response to our Market interface
+          const markets: Market[] = response.data
+            .filter((market: PolymarketMarket) => {
+              // Include active markets that are not archived
+              return market.active && !market.archived;
+            })
+            .map((market: PolymarketMarket) => {
+              // Find Yes and No tokens
+              const yesToken = market.tokens.find(
+                (token) =>
+                  token.outcome.toLowerCase().includes("yes") ||
+                  token.outcome.toLowerCase().includes("true")
+              );
+              const noToken = market.tokens.find(
+                (token) =>
+                  token.outcome.toLowerCase().includes("no") ||
+                  token.outcome.toLowerCase().includes("false")
+              );
 
-        if (!response || !response.data) {
-          throw new Error("Failed to fetch markets from CLOB API");
-        }
+              return {
+                id: market.condition_id,
+                question: market.question,
+                description: `${market.category} - ${market.question}`,
+                endDate: market.end_date_iso,
+                volume24h: 0, // Not provided in basic market data
+                liquidity: 0, // Not provided in basic market data
+                yesPrice: 0, // Set to 0 when no token IDs available
+                noPrice: 0, // Set to 0 when no token IDs available
+                yesTokenId:
+                  yesToken?.token_id || market.tokens[0]?.token_id || "",
+                noTokenId:
+                  noToken?.token_id || market.tokens[1]?.token_id || "",
+                clobTokensIds: null, // CLOB API doesn't provide this directly
+              };
+            })
+            .filter((market) => market.yesTokenId && market.noTokenId)
+            .sort(
+              (a: Market, b: Market) =>
+                new Date(b.endDate).getTime() - new Date(a.endDate).getTime()
+            ); // Sort by end date, newest first
 
-        console.log(`CLOB API: ${response.data?.length || 0} markets received`);
+          console.log(`Processed ${markets.length} CLOB markets`);
 
-        // Transform CLOB API response to our Market interface
-        const markets: Market[] = response.data
-          .filter((market: PolymarketMarket) => {
-            // Include active markets that are not archived
-            return market.active && !market.archived;
-          })
-          .map((market: PolymarketMarket) => {
-            // Find Yes and No tokens
-            const yesToken = market.tokens.find(
-              (token) =>
-                token.outcome.toLowerCase().includes("yes") ||
-                token.outcome.toLowerCase().includes("true")
+          // Enhance markets with detailed CLOB data
+          const enhancedMarkets = await this.enhanceMarketsWithClobData(
+            markets
+          );
+
+          // Check if we have enough valid markets with tokens
+          const validMarkets = enhancedMarkets.filter(
+            (market) =>
+              market.yesTokenId &&
+              market.noTokenId &&
+              market.yesTokenId !== "" &&
+              market.noTokenId !== "" &&
+              market.yesPrice > 0 && // Only include markets with real prices
+              market.noPrice > 0
+          );
+
+          console.log(
+            `Valid CLOB markets with tokens and prices: ${validMarkets.length}/${enhancedMarkets.length}`
+          );
+
+          // If we don't have enough valid markets and we have retries left, try again
+          if (validMarkets.length < limit && attempt < maxRetries) {
+            console.log(
+              `Not enough valid CLOB markets (${validMarkets.length}/${limit}), retrying...`
             );
-            const noToken = market.tokens.find(
-              (token) =>
-                token.outcome.toLowerCase().includes("no") ||
-                token.outcome.toLowerCase().includes("false")
-            );
+            attempt++;
+            continue;
+          }
 
-            return {
-              id: market.condition_id,
-              question: market.question,
-              description: `${market.category} - ${market.question}`,
-              endDate: market.end_date_iso,
-              volume24h: 0, // Not provided in basic market data
-              liquidity: 0, // Not provided in basic market data
-              yesPrice: 0.5, // Default fallback for CLOB API
-              noPrice: 0.5, // Default fallback for CLOB API
-              yesTokenId:
-                yesToken?.token_id || market.tokens[0]?.token_id || "",
-              noTokenId: noToken?.token_id || market.tokens[1]?.token_id || "",
-            };
-          })
-          .filter((market) => market.yesTokenId && market.noTokenId)
-          .sort(
-            (a: Market, b: Market) =>
-              new Date(b.endDate).getTime() - new Date(a.endDate).getTime()
-          ); // Sort by end date, newest first
+          return validMarkets.slice(0, limit);
+        }
+      } catch (error) {
+        console.error(
+          `Failed to fetch markets (attempt ${attempt + 1}):`,
+          error
+        );
 
-        console.log(`Processed ${markets.length} CLOB markets`);
+        // If this is the last attempt, throw the error
+        if (attempt >= maxRetries) {
+          throw error; // Don't fallback to mock data, let the error bubble up
+        }
 
-        // Enhance markets with detailed CLOB data
-        const enhancedMarkets = await this.enhanceMarketsWithClobData(markets);
-        return enhancedMarkets.slice(0, 20);
+        // Otherwise, increment attempt and try again
+        attempt++;
+        console.log(
+          `Retrying fetchMarkets (attempt ${attempt + 1}/${maxRetries + 1})...`
+        );
       }
-    } catch (error) {
-      console.error("Failed to fetch markets:", error);
-      throw error; // Don't fallback to mock data, let the error bubble up
     }
+
+    // This should never be reached, but just in case
+    throw new Error("Failed to fetch markets after all retry attempts");
   }
 
   async enhanceMarketsWithClobData(
@@ -548,12 +643,14 @@ export class PolymarketService {
                 if (noToken?.token_id) noTokenId = noToken.token_id;
               }
 
-              // Only return enhanced market if we have valid token IDs
+              // Only return enhanced market if we have valid token IDs and prices
               if (
                 yesTokenId &&
                 noTokenId &&
                 yesTokenId !== "" &&
-                noTokenId !== ""
+                noTokenId !== "" &&
+                yesPrice > 0 && // Only include markets with real prices
+                noPrice > 0
               ) {
                 return {
                   ...market,
@@ -566,7 +663,7 @@ export class PolymarketService {
                 };
               } else {
                 console.log(
-                  `✗ Failed to enhance market ${market.id} - missing token IDs`
+                  `✗ Failed to enhance market ${market.id} - missing token IDs or invalid prices`
                 );
                 return null; // Return null to filter out failed enhancements
               }

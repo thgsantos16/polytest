@@ -61,6 +61,7 @@ model Market {
   yesTokenId     String
   noTokenId      String
   conditionId    String?
+  clobTokensIds  String?
   isActive       Boolean  @default(true)
   isArchived     Boolean  @default(false)
   lastUpdated    DateTime @default(now())

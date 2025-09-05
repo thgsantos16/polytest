@@ -226,7 +226,9 @@ export default function TestPage() {
 
         {/* Connection Status */}
         <div className="bg-white rounded-lg p-6 shadow-lg border border-gray-200 mb-6">
-          <h2 className="text-xl font-semibold mb-4">Connection Status</h2>
+          <h2 className="text-xl font-semibold mb-4 text-gray-900">
+            Connection Status
+          </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div
               className={`p-4 rounded-lg ${
@@ -235,8 +237,8 @@ export default function TestPage() {
                   : "bg-red-50 border border-red-200"
               }`}
             >
-              <div className="font-medium">Wallet</div>
-              <div className="text-sm text-gray-600">
+              <div className="font-medium text-gray-900">Wallet</div>
+              <div className="text-sm text-gray-800">
                 {isConnected ? `✅ Connected: ${address}` : "❌ Not connected"}
               </div>
             </div>
@@ -247,14 +249,14 @@ export default function TestPage() {
                   : "bg-red-50 border border-red-200"
               }`}
             >
-              <div className="font-medium">Wallet Client</div>
-              <div className="text-sm text-gray-600">
+              <div className="font-medium text-gray-900">Wallet Client</div>
+              <div className="text-sm text-gray-800">
                 {walletClient ? "✅ Available" : "❌ Not available"}
               </div>
             </div>
             <div className="p-4 rounded-lg bg-blue-50 border border-blue-200">
-              <div className="font-medium">Service</div>
-              <div className="text-sm text-gray-600">
+              <div className="font-medium text-gray-900">Service</div>
+              <div className="text-sm text-gray-800">
                 ✅ PolymarketService Ready
               </div>
             </div>
@@ -263,7 +265,9 @@ export default function TestPage() {
 
         {/* Test Controls */}
         <div className="bg-white rounded-lg p-6 shadow-lg border border-gray-200 mb-6">
-          <h2 className="text-xl font-semibold mb-4">Test Controls</h2>
+          <h2 className="text-xl font-semibold mb-4 text-gray-900">
+            Test Controls
+          </h2>
           <div className="flex flex-wrap gap-4">
             <button
               onClick={runAllTests}
@@ -293,7 +297,9 @@ export default function TestPage() {
         {/* Market Selection */}
         {markets.length > 0 && (
           <div className="bg-white rounded-lg p-6 shadow-lg border border-gray-200 mb-6">
-            <h2 className="text-xl font-semibold mb-4">Market Selection</h2>
+            <h2 className="text-xl font-semibold mb-4 text-gray-900">
+              Market Selection
+            </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {markets.slice(0, 4).map((market, index) => (
                 <div
@@ -305,10 +311,10 @@ export default function TestPage() {
                   }`}
                   onClick={() => setSelectedMarket(market)}
                 >
-                  <div className="font-medium text-sm mb-2">
+                  <div className="font-medium text-sm mb-2 text-gray-900">
                     {market.question.substring(0, 60)}...
                   </div>
-                  <div className="text-xs text-gray-600 space-y-1">
+                  <div className="text-xs text-gray-700 space-y-1">
                     <div>Yes: {Math.round(market.yesPrice * 100)}¢</div>
                     <div>No: {Math.round(market.noPrice * 100)}¢</div>
                     <div>Yes Token: {market.yesTokenId ? "✅" : "❌"}</div>
@@ -322,7 +328,9 @@ export default function TestPage() {
 
         {/* Quick Market Tests */}
         <div className="bg-white rounded-lg p-6 shadow-lg border border-gray-200 mb-6">
-          <h2 className="text-xl font-semibold mb-4">Quick Market Tests</h2>
+          <h2 className="text-xl font-semibold mb-4 text-gray-900">
+            Quick Market Tests
+          </h2>
           <div className="flex flex-wrap gap-2">
             <button
               onClick={() =>
@@ -351,9 +359,11 @@ export default function TestPage() {
 
         {/* Test Results */}
         <div className="bg-white rounded-lg p-6 shadow-lg border border-gray-200">
-          <h2 className="text-xl font-semibold mb-4">Test Results</h2>
+          <h2 className="text-xl font-semibold mb-4 text-gray-900">
+            Test Results
+          </h2>
           {testResults.length === 0 ? (
-            <div className="text-gray-500 text-center py-8">
+            <div className="text-gray-700 text-center py-8 text-base">
               No tests run yet. Click &quot;Run All Tests&quot; to start.
             </div>
           ) : (
@@ -363,21 +373,23 @@ export default function TestPage() {
                   key={index}
                   className={`p-4 rounded-lg border ${
                     result.status === "success"
-                      ? "bg-green-50 border-green-200"
+                      ? "bg-green-100 border-green-300"
                       : result.status === "error"
-                      ? "bg-red-50 border-red-200"
-                      : "bg-yellow-50 border-yellow-200"
+                      ? "bg-red-100 border-red-300"
+                      : "bg-yellow-100 border-yellow-300"
                   }`}
                 >
                   <div className="flex items-center justify-between mb-2">
-                    <div className="font-medium">{result.test}</div>
+                    <div className="font-semibold text-gray-900 text-base">
+                      {result.test}
+                    </div>
                     <div
-                      className={`text-sm ${
+                      className={`text-lg ${
                         result.status === "success"
-                          ? "text-green-600"
+                          ? "text-green-700"
                           : result.status === "error"
-                          ? "text-red-600"
-                          : "text-yellow-600"
+                          ? "text-red-700"
+                          : "text-yellow-700"
                       }`}
                     >
                       {result.status === "success"
@@ -387,15 +399,15 @@ export default function TestPage() {
                         : "⚠️"}
                     </div>
                   </div>
-                  <div className="text-sm text-gray-700 mb-2">
+                  <div className="text-base text-gray-800 mb-2 font-medium">
                     {result.message}
                   </div>
                   {result.data ? (
-                    <div className="text-xs">
-                      <div className="cursor-pointer text-gray-500 hover:text-gray-700">
+                    <div className="text-sm">
+                      <div className="cursor-pointer text-gray-700 hover:text-gray-900 font-medium mb-2">
                         View Data
                       </div>
-                      <pre className="mt-2 p-2 bg-gray-100 rounded text-xs overflow-x-auto">
+                      <pre className="mt-2 p-3 bg-gray-200 rounded text-sm overflow-x-auto text-gray-900 font-mono">
                         {JSON.stringify(result.data, null, 2)}
                       </pre>
                     </div>
