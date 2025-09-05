@@ -957,9 +957,80 @@ export class TelegramBotService {
       }
 
       // Determine token ID based on side
-      const tokenId = side === "buy" ? market.yesTokenId : market.noTokenId;
+      let tokenId = side === "buy" ? market.yesTokenId : market.noTokenId;
+
+      // If token ID is missing, try to get it from CLOB API
+      if (!tokenId && market.conditionId) {
+        console.log(
+          `Token ID missing for market ${marketCuid}, attempting to get from CLOB API...`
+        );
+
+        try {
+          // Create a temporary market object for enhancement
+          const tempMarket = {
+            id: market.polymarketId,
+            question: market.question,
+            description: market.description || "",
+            endDate: market.endDate.toISOString(),
+            volume24h: market.volume24h,
+            liquidity: market.liquidity,
+            yesPrice: market.yesPrice,
+            noPrice: market.noPrice,
+            priceChange24h: market.priceChange24h,
+            yesTokenId: market.yesTokenId,
+            noTokenId: market.noTokenId,
+            conditionId: market.conditionId,
+            clobTokensIds: market.clobTokensIds,
+          };
+
+          // Try to enhance with CLOB data
+          const enhancedMarkets =
+            await polymarketService.enhanceMarketsWithClobData([tempMarket]);
+
+          if (enhancedMarkets.length > 0 && enhancedMarkets[0]) {
+            const enhancedMarket = enhancedMarkets[0];
+            tokenId =
+              side === "buy"
+                ? enhancedMarket.yesTokenId
+                : enhancedMarket.noTokenId;
+
+            // Update the market in database with the new token IDs
+            if (enhancedMarket.yesTokenId && enhancedMarket.noTokenId) {
+              await prismaStorageService.upsertMarket({
+                polymarketId: market.polymarketId,
+                question: market.question,
+                description: market.description || undefined,
+                endDate: market.endDate,
+                volume24h: market.volume24h,
+                liquidity: market.liquidity,
+                yesPrice: enhancedMarket.yesPrice,
+                noPrice: enhancedMarket.noPrice,
+                priceChange24h: market.priceChange24h || undefined,
+                yesTokenId: enhancedMarket.yesTokenId,
+                noTokenId: enhancedMarket.noTokenId,
+                isActive: market.isActive,
+                isArchived: market.isArchived,
+                conditionId: market.conditionId,
+                clobTokensIds: enhancedMarket.clobTokensIds,
+              });
+              console.log(
+                `Updated market ${marketCuid} with token IDs from CLOB API`
+              );
+            }
+          }
+        } catch (error) {
+          console.error(
+            `Failed to get token IDs from CLOB API for market ${marketCuid}:`,
+            error
+          );
+        }
+      }
+
       if (!tokenId) {
-        await this.bot.sendMessage(chatId, "❌ Could not determine token ID.");
+        await this.bot.sendMessage(
+          chatId,
+          "❌ Could not determine token ID. This market may not be available for trading."
+        );
         return;
       }
 
