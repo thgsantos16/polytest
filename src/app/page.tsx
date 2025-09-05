@@ -6,6 +6,7 @@ import RainbowKitConnect from "@/components/rainbowkit-connect";
 import MarketList from "@/components/market-list";
 import OrderForm from "@/components/order-form";
 import { Market } from "@/services/polymarket-service";
+import TestNav from "@/components/test-nav";
 
 export default function Home() {
   const { address, isConnected } = useAccount();
@@ -91,6 +92,7 @@ export default function Home() {
                   Polymarket Trader
                 </h1>
               </div>
+              <TestNav />
             </div>
 
             <div className="flex items-center space-x-4">

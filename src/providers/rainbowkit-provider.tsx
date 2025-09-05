@@ -6,7 +6,6 @@ import { polygon } from "wagmi/chains";
 import { createPublicClient, http } from "viem";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import "@rainbow-me/rainbowkit/styles.css";
 
 // Create a client
 const queryClient = new QueryClient();
@@ -46,7 +45,7 @@ export function RainbowKitProviderWrapper({
 
   const wagmiConfig = createConfig({
     chains: [polygon],
-    connectors,
+    connectors: connectors,
     client: ({ chain }) => publicClient,
     ssr: false, // Disable SSR to prevent indexedDB errors
   });

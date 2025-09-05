@@ -26,6 +26,8 @@ export interface Market {
   yesTokenId: string;
   noTokenId: string;
   conditionId?: string;
+  outcomes?: string | null;
+  outcomePrices?: string | null;
 }
 
 export interface PolymarketMarket {
@@ -117,6 +119,7 @@ interface GammaApiMarket {
   active: boolean;
   archived: boolean;
   outcomePrices?: string;
+  outcomes?: string;
   lastTradePrice?: number;
   bestBid?: number;
   bestAsk?: number;
@@ -261,6 +264,7 @@ export class PolymarketService {
               noPrice: noPrice,
               priceChange24h: market.oneDayPriceChange,
               outcomePrices: market.outcomePrices,
+              outcomes: market.outcomes,
               conditionId: market.conditionId,
               yesTokenId: "", // Gamma API doesn't provide token IDs directly
               noTokenId: "", // We'll need to get these from CLOB API if needed
