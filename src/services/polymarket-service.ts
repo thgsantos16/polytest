@@ -1095,17 +1095,17 @@ export class PolymarketService {
         try {
           creds = await client.createOrDeriveApiKey();
           console.log("[PLACE ORDER FROM BOT] API key created successfully");
-        } catch (apiKeyError: any) {
+        } catch (apiKeyError) {
           console.warn(
             "[PLACE ORDER FROM BOT] API key creation failed:",
-            apiKeyError.message
+            (apiKeyError as Error).message
           );
 
           // Check if it's a geographic restriction
           if (
-            apiKeyError.message?.includes("403") ||
-            apiKeyError.message?.includes("Forbidden") ||
-            apiKeyError.message?.includes("blocked")
+            (apiKeyError as Error).message?.includes("403") ||
+            (apiKeyError as Error).message?.includes("Forbidden") ||
+            (apiKeyError as Error).message?.includes("blocked")
           ) {
             throw new Error(
               "GEOGRAPHIC_RESTRICTION: Access blocked due to geographic restrictions"
@@ -1115,13 +1115,15 @@ export class PolymarketService {
           // Continue without API key for now
           console.log("[PLACE ORDER FROM BOT] Continuing without API key...");
         }
-      } catch (clientError: any) {
+      } catch (clientError) {
         console.error(
           "[PLACE ORDER FROM BOT] Client creation failed:",
           clientError
         );
 
-        if (clientError.message?.includes("GEOGRAPHIC_RESTRICTION")) {
+        if (
+          (clientError as Error).message?.includes("GEOGRAPHIC_RESTRICTION")
+        ) {
           return {
             success: false,
             message:
@@ -1251,7 +1253,7 @@ export class PolymarketService {
             message: `❌ **Order Failed**\n\n**Error:** ${errorMessage}\n\nPlease try again or contact support if the issue persists.`,
           };
         }
-      } catch (orderError: any) {
+      } catch (orderError) {
         console.error(
           "[PLACE ORDER FROM BOT] Order placement failed:",
           orderError
@@ -1259,9 +1261,9 @@ export class PolymarketService {
 
         // Check for specific error types
         if (
-          orderError.message?.includes("403") ||
-          orderError.message?.includes("Forbidden") ||
-          orderError.message?.includes("Cloudflare")
+          (orderError as Error).message?.includes("403") ||
+          (orderError as Error).message?.includes("Forbidden") ||
+          (orderError as Error).message?.includes("Cloudflare")
         ) {
           return {
             success: false,
@@ -1273,7 +1275,7 @@ export class PolymarketService {
         return {
           success: false,
           message: `❌ **Order Failed**\n\n**Error:** ${
-            orderError.message || "Unknown error"
+            (orderError as Error).message || "Unknown error"
           }\n\nPlease try again later.`,
         };
       }
