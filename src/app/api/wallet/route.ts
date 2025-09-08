@@ -91,9 +91,7 @@ async function getWalletBalance(walletAddress: string): Promise<{
 }> {
   try {
     // Connect to Polygon network
-    const provider = new ethers.JsonRpcProvider(
-      process.env.POLYGON_RPC_URL || "https://polygon-rpc.com"
-    );
+    const provider = new ethers.JsonRpcProvider(process.env.POLYGON_RPC_URL);
 
     // USDC contract address on Polygon
     const usdcAddress = "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359";

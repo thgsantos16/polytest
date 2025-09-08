@@ -1261,6 +1261,29 @@ export class TelegramBotService {
     this.bot.stopPolling();
     prismaStorageService.disconnect();
   }
+
+  private async handleGeographicRestriction(chatId: string) {
+    const message = `🌍 **Geographic Restriction Detected**
+
+It appears that Polymarket access is restricted in your current region. This is a known limitation and not an issue with your bot setup.
+
+**Possible Solutions:**
+• 🔄 Use a VPN service to change your location
+•  Deploy your bot in a supported region (EU, Asia, etc.)
+•  Contact Polymarket support for API access
+• ⏰ Wait for regional restrictions to be lifted
+
+**Supported Regions (as of 2024):**
+• European Union
+• United Kingdom  
+• Canada
+• Australia
+• Most Asian countries
+
+**Note:** This restriction only affects API access, not the underlying blockchain functionality.`;
+
+    await this.sendMessage(chatId, message);
+  }
 }
 
 export const telegramBotService = new TelegramBotService();

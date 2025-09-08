@@ -949,10 +949,10 @@ export class PolymarketService {
 
       console.log("Checking USDC allowance...");
 
+      console.log("POLYGON_RPC_URL:", process.env.POLYGON_RPC_URL);
+
       // Create a proper provider and signer for allowance checks
-      const provider = new JsonRpcProvider(
-        process.env.POLYGON_RPC_URL || "https://polygon-rpc.com"
-      );
+      const provider = new JsonRpcProvider(process.env.POLYGON_RPC_URL);
       const rpcSigner = provider.getSigner(await signer.getAddress());
 
       // Check and approve USDC allowance
@@ -1069,31 +1069,80 @@ export class PolymarketService {
         throw new Error("Signer is required for order placement from bot");
       }
 
-      // Get the address properly from JsonRpcSigner
       const account = await signer.getAddress();
-
       console.log("[PLACE ORDER FROM BOT] Account:", account);
-      const signerForClient = signer;
 
-      // Create the main client first without credentials
-      const tempClient = new ClobClient(
-        this.host,
-        this.chainId,
-        signerForClient
+      console.log(
+        "[PLACE ORDER FROM BOT] POLYGON_RPC_URL:",
+        process.env.POLYGON_RPC_URL
       );
 
-      // Now create or derive API key using the properly initialized client
-      const creds = await tempClient.createOrDeriveApiKey();
+      // Create a proper provider for network operations
+      const rpcUrl = process.env.POLYGON_RPC_URL;
+      const provider = new JsonRpcProvider(rpcUrl);
+      const connectedSigner = signer.connect(provider);
 
-      // Recreate the client with the credentials
-      const finalClient = new ClobClient(
-        this.host,
-        this.chainId,
-        signerForClient,
-        creds,
-        1, // Magic/Email Login signature type (since we're using private key)
-        account // Funder address
-      );
+      // Try multiple approaches for client creation
+      let client;
+      let creds;
+
+      try {
+        // First attempt: Standard client creation
+        client = new ClobClient(this.host, this.chainId, connectedSigner);
+        console.log("[PLACE ORDER FROM BOT] Client created successfully");
+
+        // Try to create API key
+        try {
+          creds = await client.createOrDeriveApiKey();
+          console.log("[PLACE ORDER FROM BOT] API key created successfully");
+        } catch (apiKeyError: any) {
+          console.warn(
+            "[PLACE ORDER FROM BOT] API key creation failed:",
+            apiKeyError.message
+          );
+
+          // Check if it's a geographic restriction
+          if (
+            apiKeyError.message?.includes("403") ||
+            apiKeyError.message?.includes("Forbidden") ||
+            apiKeyError.message?.includes("blocked")
+          ) {
+            throw new Error(
+              "GEOGRAPHIC_RESTRICTION: Access blocked due to geographic restrictions"
+            );
+          }
+
+          // Continue without API key for now
+          console.log("[PLACE ORDER FROM BOT] Continuing without API key...");
+        }
+      } catch (clientError: any) {
+        console.error(
+          "[PLACE ORDER FROM BOT] Client creation failed:",
+          clientError
+        );
+
+        if (clientError.message?.includes("GEOGRAPHIC_RESTRICTION")) {
+          return {
+            success: false,
+            message:
+              "❌ **Geographic Restriction Detected**\n\nPolymarket access is currently restricted in your region. This is a known limitation and not an issue with your setup.\n\n**Possible Solutions:**\n• Use a VPN service\n• Deploy your bot in a supported region\n• Contact Polymarket support for API access",
+          };
+        }
+
+        throw clientError;
+      }
+
+      // Create final client with credentials if available
+      const finalClient = creds
+        ? new ClobClient(
+            this.host,
+            this.chainId,
+            connectedSigner,
+            creds,
+            1,
+            account
+          )
+        : client;
 
       // Validate order details
       if (!orderDetails.tokenId) {
@@ -1104,170 +1153,137 @@ export class PolymarketService {
         throw new Error("Price and size must be greater than 0");
       }
 
-      const allowances = await finalClient.getBalanceAllowance({
-        asset_type: AssetType.COLLATERAL,
-      });
-      console.log("Allowances:", allowances);
-
-      console.log("Checking USDC allowance...");
-
-      const provider = new JsonRpcProvider(
-        process.env.POLYGON_RPC_URL || "https://polygon-rpc.com"
-      );
-
-      // Use provider.getSigner() instead of new JsonRpcSigner()
-      const rpcSigner = provider.getSigner(await signer.getAddress());
-
-      // Check and approve USDC allowance
-      try {
-        await this.checkAndApproveUSDCAllowance(
-          rpcSigner,
-          account,
-          orderDetails.size
-        );
-      } catch (allowanceError) {
-        console.warn("Allowance check/update failed:", allowanceError);
-        // Continue with order placement - user might need to approve manually
-      }
-
-      // Create market order object (like the Python example)
+      // Create market order object
       const marketOrder = {
         tokenID: orderDetails.tokenId,
-        amount: orderDetails.size, // Use the USD amount directly
+        amount: orderDetails.size,
         side: orderDetails.side === "buy" ? Side.BUY : Side.SELL,
-        order_type: OrderType.FOK, // Use FOK like the Python example
+        order_type: OrderType.FOK,
       };
 
       console.log(
         "Requesting wallet signature for market order...",
         marketOrder
       );
-      const signedOrder = await finalClient.createMarketOrder(marketOrder);
-      console.log("Market order signed successfully", signedOrder);
 
-      // Post the order to the exchange
-      console.log("Posting market order to exchange...");
-      const response = await finalClient.postOrder(signedOrder, OrderType.FOK);
+      try {
+        const signedOrder = await finalClient.createMarketOrder(marketOrder);
+        console.log("Market order signed successfully", signedOrder);
 
-      console.log("[PLACE ORDER FROM BOT] Order posted successfully", response);
-      console.log(
-        "[PLACE ORDER FROM BOT] Response structure:",
-        JSON.stringify(response, null, 2)
-      );
-
-      // Check if order was successful
-      if (response && response.success) {
-        // Try to extract transaction hash from various possible fields
-        const transactionHash =
-          response.txHash ||
-          response.transactionHash ||
-          response.hash ||
-          response.orderHash ||
-          response.orderId ||
-          response.id ||
-          "unknown";
-
-        console.log(
-          "[PLACE ORDER FROM BOT] Extracted transaction hash:",
-          transactionHash
+        // Post the order with enhanced error handling
+        console.log("Posting market order to exchange...");
+        const response = await finalClient.postOrder(
+          signedOrder,
+          OrderType.FOK
         );
 
-        // After successful order placement, save to database
-        try {
-          const { prismaStorageService } = await import(
-            "./prisma-storage-service"
-          );
+        console.log(
+          "[PLACE ORDER FROM BOT] Order posted successfully",
+          response
+        );
 
-          // Get user ID from telegram ID (you'll need to pass this or get it from the signer)
-          const user = await prismaStorageService.getUserByTelegramId(
-            telegramId
-          );
-          if (!user) {
-            throw new Error("User not found");
+        // Handle successful response
+        if (
+          response &&
+          (response.success || response.orderHash || response.orderId)
+        ) {
+          const transactionHash =
+            response.txHash ||
+            response.transactionHash ||
+            response.hash ||
+            response.orderHash ||
+            response.orderId ||
+            "unknown";
+
+          // Save to database
+          try {
+            const { prismaStorageService } = await import(
+              "./prisma-storage-service"
+            );
+            const user = await prismaStorageService.getUserByTelegramId(
+              telegramId
+            );
+            const market = await prismaStorageService.getMarketByTokenId(
+              orderDetails.tokenId
+            );
+
+            if (user && market) {
+              await prismaStorageService.createOrder({
+                userId: user.id,
+                marketId: market.id,
+                tokenId: orderDetails.tokenId,
+                side: orderDetails.side,
+                amount: orderDetails.size,
+                price: orderDetails.price,
+                totalCost: orderDetails.size * orderDetails.price,
+                orderHash: response.orderHash || response.orderId,
+                transactionHash:
+                  transactionHash !== "unknown" ? transactionHash : undefined,
+                status: "pending",
+                orderType: "FOK",
+              });
+              console.log("[PLACE ORDER FROM BOT] Order saved to database");
+            }
+          } catch (dbError) {
+            console.error(
+              "[PLACE ORDER FROM BOT] Failed to save order to database:",
+              dbError
+            );
           }
 
-          // Get market ID from token ID (you'll need to find the market by token ID)
-          const market = await prismaStorageService.getMarketByTokenId(
-            orderDetails.tokenId
-          );
-          if (!market) {
-            throw new Error("Market not found for token ID");
-          }
+          return {
+            success: true,
+            message: `✅ **Order Placed Successfully!**\n\n📊 **Market:** ${
+              orderDetails.marketId || "Unknown"
+            }\n🔄 **Side:** ${orderDetails.side.toUpperCase()}\n💰 **Amount:** $${
+              orderDetails.size
+            }\n💵 **Price:** $${orderDetails.price.toFixed(
+              4
+            )}\n\n🔗 **Transaction:** ${transactionHash}`,
+            orderId: transactionHash,
+            status: response.status || "placed",
+          };
+        } else {
+          const errorMessage =
+            response?.error || response?.message || "Unknown error";
+          return {
+            success: false,
+            message: `❌ **Order Failed**\n\n**Error:** ${errorMessage}\n\nPlease try again or contact support if the issue persists.`,
+          };
+        }
+      } catch (orderError: any) {
+        console.error(
+          "[PLACE ORDER FROM BOT] Order placement failed:",
+          orderError
+        );
 
-          await prismaStorageService.createOrder({
-            userId: user.id,
-            marketId: market.id,
-            tokenId: orderDetails.tokenId,
-            side: orderDetails.side,
-            amount: orderDetails.size,
-            price: orderDetails.price,
-            totalCost: orderDetails.size * orderDetails.price,
-            orderHash: response.orderHash || response.orderId,
-            transactionHash:
-              transactionHash !== "unknown" ? transactionHash : undefined,
-            status: "pending",
-            orderType: "FOK",
-          });
-
-          console.log("[PLACE ORDER FROM BOT] Order saved to database");
-        } catch (dbError) {
-          console.error(
-            "[PLACE ORDER FROM BOT] Failed to save order to database:",
-            dbError
-          );
-          // Don't fail the order placement if DB save fails
+        // Check for specific error types
+        if (
+          orderError.message?.includes("403") ||
+          orderError.message?.includes("Forbidden") ||
+          orderError.message?.includes("Cloudflare")
+        ) {
+          return {
+            success: false,
+            message:
+              "❌ **Access Blocked**\n\nPolymarket API access is currently restricted in your region. This is a known limitation.\n\n**Solutions:**\n• Use a VPN service\n• Deploy in a supported region\n• Contact Polymarket support",
+          };
         }
 
         return {
-          success: true,
-          message: `Successfully placed ${orderDetails.side} order for ${
-            orderDetails.size
-          } tokens at $${orderDetails.price.toFixed(4)} each`,
-          orderId: transactionHash,
-          status: response.status || "placed",
-        };
-      } else {
-        const errorMessage =
-          response?.error || response?.message || "Unknown error";
-        return {
           success: false,
-          message: `Failed to place order: ${errorMessage}`,
-          orderId: response?.orderHash || response?.orderId || "unknown",
-          status: response?.status || "failed",
+          message: `❌ **Order Failed**\n\n**Error:** ${
+            orderError.message || "Unknown error"
+          }\n\nPlease try again later.`,
         };
       }
     } catch (error) {
       console.error("Order placement error:", error);
-
-      // Provide more specific error messages
-      if (error instanceof Error) {
-        if (error.message.includes("User rejected")) {
-          return {
-            success: false,
-            message: "Order cancelled by user",
-          };
-        } else if (error.message.includes("insufficient")) {
-          return {
-            success: false,
-            message: "Insufficient balance for this order",
-          };
-        } else if (error.message.includes("network")) {
-          return {
-            success: false,
-            message:
-              "Network error. Please check your connection and try again.",
-          };
-        }
-      }
-
       return {
         success: false,
-        message:
-          error instanceof Error
-            ? error.message.includes("Signer is needed")
-              ? "Wallet signing is required for order placement. Please ensure your wallet is connected and try again."
-              : error.message
-            : "Failed to place order. Please try again.",
+        message: `❌ **System Error**\n\n**Error:** ${
+          error instanceof Error ? error.message : "Unknown error"
+        }\n\nPlease try again or contact support.`,
       };
     }
   }

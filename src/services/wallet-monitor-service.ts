@@ -21,7 +21,7 @@ const USDC_ABI = [
 const CHAINS = {
   polygon: {
     name: "Polygon",
-    rpc: process.env.POLYGON_RPC_URL || "https://polygon-rpc.com",
+    rpc: process.env.POLYGON_RPC_URL,
     chainId: 137,
     tokens: {
       usdc: "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359", // USDC on Polygon
