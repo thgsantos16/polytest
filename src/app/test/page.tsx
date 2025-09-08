@@ -368,6 +368,39 @@ export default function TestPage() {
     }
   };
 
+  const enhanceMarkets = async () => {
+    try {
+      addTestResult(
+        "Enhance Markets",
+        "success",
+        "Starting market enhancement process..."
+      );
+
+      const response = await fetch("/api/enhance-markets", { method: "POST" });
+      const data = await response.json();
+
+      if (data.success) {
+        addTestResult(
+          "Enhance Markets",
+          "success",
+          "✅ Markets enhanced successfully with token IDs"
+        );
+      } else {
+        addTestResult(
+          "Enhance Markets",
+          "error",
+          `❌ Failed to enhance markets: ${data.error}`
+        );
+      }
+    } catch (error) {
+      addTestResult(
+        "Enhance Markets",
+        "error",
+        `❌ Error enhancing markets: ${(error as Error).message}`
+      );
+    }
+  };
+
   // Load markets when component mounts
   useEffect(() => {
     loadMarkets();
@@ -570,6 +603,13 @@ export default function TestPage() {
               className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-lg font-medium transition-colors"
             >
               Clear Results
+            </button>
+
+            <button
+              onClick={enhanceMarkets}
+              className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white px-6 py-2 rounded-lg font-medium transition-colors"
+            >
+              Enhance Markets with Token IDs
             </button>
           </div>
         </div>

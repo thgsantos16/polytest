@@ -1,16 +1,16 @@
 import {
   ClobClient,
-  UserOrder,
   OrderType,
   Side,
   AssetType,
 } from "@polymarket/clob-client";
 import { Chain } from "@polymarket/clob-client/dist/types";
 import { WalletClient } from "viem";
-import { Web3Provider } from "@ethersproject/providers";
-import { ethers, JsonRpcProvider } from "ethers";
+import { Web3Provider, JsonRpcProvider } from "@ethersproject/providers";
+import { ethers } from "ethers";
 import { JsonRpcSigner } from "@ethersproject/providers";
 import { prismaStorageService } from "./prisma-storage-service";
+import { Wallet } from "@ethersproject/wallet";
 
 export interface Market {
   id: string;
@@ -226,7 +226,7 @@ export class PolymarketService {
               // Convert to Market interface for enhancement
               const marketsForEnhancement = marketsToEnhance.map(
                 (dbMarket) => ({
-                  id: dbMarket.polymarketId,
+                  id: dbMarket.polymarketId, // Keep the original polymarketId as the ID
                   question: dbMarket.question,
                   description: dbMarket.description || "",
                   endDate: dbMarket.endDate.toISOString(),
@@ -235,9 +235,9 @@ export class PolymarketService {
                   yesPrice: dbMarket.yesPrice,
                   noPrice: dbMarket.noPrice,
                   priceChange24h: dbMarket.priceChange24h,
-                  yesTokenId: dbMarket.yesTokenId,
-                  noTokenId: dbMarket.noTokenId,
-                  conditionId: dbMarket.conditionId || undefined,
+                  yesTokenId: dbMarket.yesTokenId || "",
+                  noTokenId: dbMarket.noTokenId || "",
+                  conditionId: dbMarket.conditionId || "",
                   clobTokensIds: dbMarket.clobTokensIds,
                 })
               );
@@ -467,8 +467,8 @@ export class PolymarketService {
                   yesPrice: market.yesPrice,
                   noPrice: market.noPrice,
                   priceChange24h: market.priceChange24h || undefined,
-                  yesTokenId: market.yesTokenId, // Changed from tokens.yes
-                  noTokenId: market.noTokenId, // Changed from tokens.no
+                  yesTokenId: market.yesTokenId,
+                  noTokenId: market.noTokenId,
                   isActive: true,
                   isArchived: false,
                   conditionId: market.conditionId || "",
@@ -684,7 +684,11 @@ export class PolymarketService {
           try {
             // Find the original Gamma API data to get the conditionId
             let conditionId = market.id;
-            if (originalGammaData) {
+            if (market.conditionId) {
+              // If the market already has a conditionId, use it directly
+              conditionId = market.conditionId;
+            } else if (originalGammaData) {
+              // Otherwise, look it up from the original Gamma API data
               const gammaMarket = originalGammaData.find(
                 (gm) => gm.id.toString() === market.id
               );
@@ -696,14 +700,9 @@ export class PolymarketService {
             // Get detailed market data from CLOB API using conditionId
             const detailedMarket = await marketClient.getMarket(conditionId);
 
-            console.log("Detailed market:", detailedMarket);
-
-            if (detailedMarket.data && detailedMarket.data.tokens) {
-              const marketData = detailedMarket.data;
+            if (detailedMarket && detailedMarket.tokens) {
+              const marketData = detailedMarket;
               const tokens = marketData.tokens;
-
-              console.log("Market data:", marketData);
-              console.log("Tokens:", tokens);
 
               // Extract real-time prices from order book or last trade
               let yesPrice = market.yesPrice; // Keep existing price as fallback
@@ -726,8 +725,8 @@ export class PolymarketService {
               }
 
               // Extract token IDs from CLOB API response
-              let yesTokenId = market.yesTokenId; // Changed from market.tokens.yes
-              let noTokenId = market.noTokenId; // Changed from market.tokens.no
+              let yesTokenId = market.yesTokenId;
+              let noTokenId = market.noTokenId;
 
               if (tokens && Array.isArray(tokens)) {
                 const yesToken = tokens.find(
@@ -1048,25 +1047,24 @@ export class PolymarketService {
 
   async placeOrderFromBot(
     orderDetails: OrderDetails,
-    walletClient?: WalletClient
+    signer: Wallet
   ): Promise<OrderResponse> {
     try {
       console.log("Creating order...");
 
-      if (!walletClient) {
-        throw new Error("Wallet client is required for order placement");
+      if (!signer) {
+        throw new Error("Signer is required for order placement");
       }
 
-      // Convert WalletClient to ethers signer for Polymarket compatibility
-      const [account] = await walletClient.getAddresses();
-      const ethersProvider = new Web3Provider(walletClient.transport);
-      const signer = ethersProvider.getSigner();
+      // Get the address properly from JsonRpcSigner
+      const account = await signer.getAddress();
+      const signerForClient = signer;
 
       // Create the main client first without credentials
       const orderClient = new ClobClient(
         this.host,
         this.chainId,
-        signer,
+        signerForClient,
         undefined, // No creds initially
         0, // Browser wallet signature type
         account // Funder address
@@ -1079,7 +1077,7 @@ export class PolymarketService {
       const finalClient = new ClobClient(
         this.host,
         this.chainId,
-        signer,
+        signerForClient,
         creds,
         0, // Browser wallet signature type
         account // Funder address
@@ -1101,10 +1099,16 @@ export class PolymarketService {
 
       console.log("Checking USDC allowance...");
 
+      const provider = new JsonRpcProvider(
+        process.env.POLYGON_RPC_URL || "https://polygon-rpc.com"
+      );
+
+      const rpcSigner = new JsonRpcSigner(signer, provider);
+
       // Check and approve USDC allowance
       try {
         await this.checkAndApproveUSDCAllowance(
-          signer,
+          rpcSigner,
           account,
           orderDetails.size
         );

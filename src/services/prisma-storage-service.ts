@@ -1,6 +1,6 @@
 import { PrismaClient } from "@/generated/prisma";
-import { ethers } from "ethers";
 import crypto from "crypto";
+import { Wallet } from "@ethersproject/wallet";
 
 const prisma = new PrismaClient();
 
@@ -244,8 +244,10 @@ export class PrismaStorageService {
         wallet.encryptedPrivateKey,
         wallet.encryptionIV
       );
-      const ethersWallet = new ethers.Wallet(privateKey);
-      return ethersWallet;
+
+      const signer = new Wallet(privateKey);
+
+      return signer;
     } catch (error) {
       console.error("Error creating wallet signer:", error);
       return null;
@@ -321,6 +323,8 @@ export class PrismaStorageService {
     clobTokensIds?: string | null;
   }): Promise<string> {
     try {
+      console.log("Upserting market:", marketData);
+
       const market = await prisma.market.upsert({
         where: { polymarketId: marketData.polymarketId },
         update: {
@@ -342,6 +346,8 @@ export class PrismaStorageService {
         },
         create: marketData,
       });
+
+      console.log("Market upserted:", market);
 
       return market.id; // Return the CUID
     } catch (error) {
@@ -434,6 +440,95 @@ export class PrismaStorageService {
       });
     } catch (error) {
       console.error("Error getting market by ID:", error);
+      throw error;
+    }
+  }
+
+  async enhanceAllMarketsWithTokenIds(): Promise<void> {
+    try {
+      console.log("Starting to enhance all markets with token IDs...");
+
+      // Get all markets that have conditionId but missing token IDs
+      const marketsToEnhance = await prisma.market.findMany({
+        where: {
+          AND: [
+            { conditionId: { not: null } },
+            { conditionId: { not: "" } },
+            {
+              OR: [{ yesTokenId: "" }, { noTokenId: "" }],
+            },
+          ],
+        },
+      });
+
+      console.log(`Found ${marketsToEnhance.length} markets to enhance`);
+
+      if (marketsToEnhance.length === 0) {
+        console.log("No markets need enhancement");
+        return;
+      }
+
+      // Import the polymarket service to use enhancement
+      const { polymarketService } = await import("./polymarket-service");
+
+      // Convert to Market interface for enhancement
+      const marketsForEnhancement = marketsToEnhance.map((dbMarket) => ({
+        id: dbMarket.polymarketId, // Keep the original polymarketId as the ID
+        question: dbMarket.question,
+        description: dbMarket.description || "",
+        endDate: dbMarket.endDate.toISOString(),
+        volume24h: dbMarket.volume24h,
+        liquidity: dbMarket.liquidity,
+        yesPrice: dbMarket.yesPrice,
+        noPrice: dbMarket.noPrice,
+        priceChange24h: dbMarket.priceChange24h,
+        yesTokenId: dbMarket.yesTokenId || "",
+        noTokenId: dbMarket.noTokenId || "",
+        conditionId: dbMarket.conditionId || "",
+        clobTokensIds: dbMarket.clobTokensIds,
+      }));
+
+      // Enhance markets with CLOB data
+      const enhancedMarkets =
+        await polymarketService.enhanceMarketsWithClobData(
+          marketsForEnhancement
+        );
+
+      console.log(`Successfully enhanced ${enhancedMarkets.length} markets`);
+
+      // Update enhanced markets in database
+      for (const enhancedMarket of enhancedMarkets) {
+        try {
+          await this.upsertMarket({
+            polymarketId: enhancedMarket.id, // This is now conditionId, not polymarketId!
+            question: enhancedMarket.question,
+            description: enhancedMarket.description,
+            endDate: new Date(enhancedMarket.endDate),
+            volume24h: enhancedMarket.volume24h,
+            liquidity: enhancedMarket.liquidity,
+            yesPrice: enhancedMarket.yesPrice,
+            noPrice: enhancedMarket.noPrice,
+            priceChange24h: enhancedMarket.priceChange24h || undefined,
+            yesTokenId: enhancedMarket.yesTokenId,
+            noTokenId: enhancedMarket.noTokenId,
+            isActive: true,
+            isArchived: false,
+            conditionId: enhancedMarket.conditionId || "",
+            clobTokensIds: enhancedMarket.clobTokensIds,
+          });
+
+          console.log(`Updated market ${enhancedMarket.id} with token IDs`);
+        } catch (error) {
+          console.warn(
+            `Failed to update enhanced market ${enhancedMarket.id}:`,
+            error
+          );
+        }
+      }
+
+      console.log("Market enhancement completed");
+    } catch (error) {
+      console.error("Error enhancing markets:", error);
       throw error;
     }
   }

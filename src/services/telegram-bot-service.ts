@@ -1047,7 +1047,7 @@ export class TelegramBotService {
       // Place the order
       const result = await polymarketService.placeOrderFromBot(
         orderDetails,
-        signer as unknown as WalletClient
+        signer
       );
 
       if (result.success) {
