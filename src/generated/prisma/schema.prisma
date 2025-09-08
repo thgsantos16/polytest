@@ -25,6 +25,7 @@ model User {
   // Relations
   wallet    Wallet?
   positions Position[]
+  orders    Order[]
   transfers Transfer[]
   balances  Balance[]
 
@@ -69,6 +70,7 @@ model Market {
 
   // Relations
   positions Position[]
+  orders    Order[]
 
   @@map("markets")
 }
@@ -122,4 +124,27 @@ model Balance {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("balances")
+}
+
+model Order {
+  id              String   @id @default(cuid())
+  userId          String
+  marketId        String
+  tokenId         String
+  side            String // 'buy' or 'sell'
+  amount          Float // Order amount in USD
+  price           Float // Price per token
+  totalCost       Float // Total cost (amount * price)
+  orderHash       String? // CLOB order hash
+  transactionHash String? // Blockchain transaction hash
+  status          String // 'pending', 'filled', 'cancelled', 'failed'
+  orderType       String // 'FOK', 'GTC', etc.
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  market Market @relation(fields: [marketId], references: [id], onDelete: Cascade)
+
+  @@map("orders")
 }

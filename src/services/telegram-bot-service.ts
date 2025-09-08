@@ -508,9 +508,10 @@ export class TelegramBotService {
         walletAddress: wallet.walletAddress,
       };
 
-      const result = await polymarketService.placeOrder(
+      const result = await polymarketService.placeOrderFromBot(
         orderDetails,
-        signer as unknown as WalletClient
+        signer,
+        telegramId
       );
 
       if (result.success) {
@@ -1047,7 +1048,8 @@ export class TelegramBotService {
       // Place the order
       const result = await polymarketService.placeOrderFromBot(
         orderDetails,
-        signer
+        signer,
+        telegramId
       );
 
       if (result.success) {

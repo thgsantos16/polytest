@@ -533,6 +533,63 @@ export class PrismaStorageService {
     }
   }
 
+  // Order management
+  async createOrder(orderData: {
+    userId: string;
+    marketId: string;
+    tokenId: string;
+    side: string;
+    amount: number;
+    price: number;
+    totalCost: number;
+    orderHash?: string;
+    transactionHash?: string;
+    status: string;
+    orderType: string;
+  }) {
+    return await prisma.order.create({
+      data: orderData,
+    });
+  }
+
+  async getOrdersByUserId(userId: string) {
+    return await prisma.order.findMany({
+      where: { userId },
+      include: { market: true },
+      orderBy: { createdAt: "desc" },
+    });
+  }
+
+  async getOrderByHash(orderHash: string) {
+    return await prisma.order.findFirst({
+      where: { orderHash },
+      include: { market: true, user: true },
+    });
+  }
+
+  async updateOrderStatus(
+    orderId: string,
+    status: string,
+    transactionHash?: string
+  ) {
+    return await prisma.order.update({
+      where: { id: orderId },
+      data: {
+        status,
+        transactionHash: transactionHash || undefined,
+        updatedAt: new Date(),
+      },
+    });
+  }
+
+  async getMarketByTokenId(tokenId: string) {
+    return await prisma.market.findFirst({
+      where: {
+        OR: [{ yesTokenId: tokenId }, { noTokenId: tokenId }],
+      },
+    });
+  }
+
   // Cleanup
   async disconnect() {
     await prisma.$disconnect();

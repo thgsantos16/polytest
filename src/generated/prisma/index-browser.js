@@ -200,6 +200,23 @@ exports.Prisma.BalanceScalarFieldEnum = {
   timestamp: 'timestamp'
 };
 
+exports.Prisma.OrderScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  marketId: 'marketId',
+  tokenId: 'tokenId',
+  side: 'side',
+  amount: 'amount',
+  price: 'price',
+  totalCost: 'totalCost',
+  orderHash: 'orderHash',
+  transactionHash: 'transactionHash',
+  status: 'status',
+  orderType: 'orderType',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -222,7 +239,8 @@ exports.Prisma.ModelName = {
   Market: 'Market',
   Position: 'Position',
   Transfer: 'Transfer',
-  Balance: 'Balance'
+  Balance: 'Balance',
+  Order: 'Order'
 };
 
 /**

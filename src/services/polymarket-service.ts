@@ -988,15 +988,28 @@ export class PolymarketService {
       const response = await finalClient.postOrder(signedOrder, OrderType.FOK);
 
       console.log("Order posted successfully", response);
+      console.log("Response structure:", JSON.stringify(response, null, 2));
 
       // Check if order was successful
       if (response && response.success !== false) {
+        // Try to extract transaction hash from various possible fields
+        const transactionHash =
+          response.txHash ||
+          response.transactionHash ||
+          response.hash ||
+          response.orderHash ||
+          response.orderId ||
+          response.id ||
+          "unknown";
+
+        console.log("Extracted transaction hash:", transactionHash);
+
         return {
           success: true,
           message: `Successfully placed ${orderDetails.side} order for ${
             orderDetails.size
           } tokens at $${orderDetails.price.toFixed(4)} each`,
-          orderId: response.orderHash || response.orderId || "unknown",
+          orderId: transactionHash,
           status: response.status || "placed",
         };
       } else {
@@ -1047,7 +1060,8 @@ export class PolymarketService {
 
   async placeOrderFromBot(
     orderDetails: OrderDetails,
-    signer: Wallet
+    signer: Wallet,
+    telegramId: string
   ): Promise<OrderResponse> {
     try {
       console.log("Creating order...");
@@ -1137,16 +1151,81 @@ export class PolymarketService {
       console.log("Posting market order to exchange...");
       const response = await finalClient.postOrder(signedOrder, OrderType.FOK);
 
-      console.log("Order posted successfully", response);
+      console.log("[PLACE ORDER FROM BOT] Order posted successfully", response);
+      console.log(
+        "[PLACE ORDER FROM BOT] Response structure:",
+        JSON.stringify(response, null, 2)
+      );
 
       // Check if order was successful
       if (response && response.success !== false) {
+        // Try to extract transaction hash from various possible fields
+        const transactionHash =
+          response.txHash ||
+          response.transactionHash ||
+          response.hash ||
+          response.orderHash ||
+          response.orderId ||
+          response.id ||
+          "unknown";
+
+        console.log(
+          "[PLACE ORDER FROM BOT] Extracted transaction hash:",
+          transactionHash
+        );
+
+        // After successful order placement, save to database
+        try {
+          const { prismaStorageService } = await import(
+            "./prisma-storage-service"
+          );
+
+          // Get user ID from telegram ID (you'll need to pass this or get it from the signer)
+          const user = await prismaStorageService.getUserByTelegramId(
+            telegramId
+          );
+          if (!user) {
+            throw new Error("User not found");
+          }
+
+          // Get market ID from token ID (you'll need to find the market by token ID)
+          const market = await prismaStorageService.getMarketByTokenId(
+            orderDetails.tokenId
+          );
+          if (!market) {
+            throw new Error("Market not found for token ID");
+          }
+
+          await prismaStorageService.createOrder({
+            userId: user.id,
+            marketId: market.id,
+            tokenId: orderDetails.tokenId,
+            side: orderDetails.side,
+            amount: orderDetails.size,
+            price: orderDetails.price,
+            totalCost: orderDetails.size * orderDetails.price,
+            orderHash: response.orderHash || response.orderId,
+            transactionHash:
+              transactionHash !== "unknown" ? transactionHash : undefined,
+            status: "pending",
+            orderType: "FOK",
+          });
+
+          console.log("[PLACE ORDER FROM BOT] Order saved to database");
+        } catch (dbError) {
+          console.error(
+            "[PLACE ORDER FROM BOT] Failed to save order to database:",
+            dbError
+          );
+          // Don't fail the order placement if DB save fails
+        }
+
         return {
           success: true,
           message: `Successfully placed ${orderDetails.side} order for ${
             orderDetails.size
           } tokens at $${orderDetails.price.toFixed(4)} each`,
-          orderId: response.orderHash || response.orderId || "unknown",
+          orderId: transactionHash,
           status: response.status || "placed",
         };
       } else {
