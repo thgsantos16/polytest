@@ -1103,7 +1103,8 @@ export class PolymarketService {
         process.env.POLYGON_RPC_URL || "https://polygon-rpc.com"
       );
 
-      const rpcSigner = new JsonRpcSigner(signer, provider);
+      // Use provider.getSigner() instead of new JsonRpcSigner()
+      const rpcSigner = provider.getSigner(await signer.getAddress());
 
       // Check and approve USDC allowance
       try {
