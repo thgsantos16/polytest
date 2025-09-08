@@ -1060,9 +1060,6 @@ export class TelegramBotService {
             `🔄 Side: ${side.toUpperCase()}\n` +
             `💰 Amount: $${amount}\n` +
             `💵 Unit Price: $${parseFloat(price).toFixed(4)}\n` +
-            `📈 Total Cost: $${(parseFloat(amount) * parseFloat(price)).toFixed(
-              2
-            )}\n` +
             `🔗 Transaction: ${result.orderId}\n\n` +
             `Your trade has been submitted to the blockchain!`
         );

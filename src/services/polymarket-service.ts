@@ -918,17 +918,10 @@ export class PolymarketService {
       const signer = ethersProvider.getSigner();
 
       // Create the main client first without credentials
-      const orderClient = new ClobClient(
-        this.host,
-        this.chainId,
-        signer,
-        undefined, // No creds initially
-        0, // Browser wallet signature type
-        account // Funder address
-      );
+      const tempClient = new ClobClient(this.host, this.chainId, signer);
 
       // Now create or derive API key using the properly initialized client
-      const creds = await orderClient.createOrDeriveApiKey();
+      const creds = await tempClient.createOrDeriveApiKey();
 
       // Recreate the client with the credentials
       const finalClient = new ClobClient(
@@ -936,7 +929,7 @@ export class PolymarketService {
         this.chainId,
         signer,
         creds,
-        0, // Browser wallet signature type
+        1, // Magic/Email Login signature type (since we're using private key)
         account // Funder address
       );
 
@@ -956,10 +949,16 @@ export class PolymarketService {
 
       console.log("Checking USDC allowance...");
 
+      // Create a proper provider and signer for allowance checks
+      const provider = new JsonRpcProvider(
+        process.env.POLYGON_RPC_URL || "https://polygon-rpc.com"
+      );
+      const rpcSigner = provider.getSigner(await signer.getAddress());
+
       // Check and approve USDC allowance
       try {
         await this.checkAndApproveUSDCAllowance(
-          signer,
+          rpcSigner,
           account,
           orderDetails.size
         );
@@ -991,7 +990,7 @@ export class PolymarketService {
       console.log("Response structure:", JSON.stringify(response, null, 2));
 
       // Check if order was successful
-      if (response && response.success !== false) {
+      if (response && response.success) {
         // Try to extract transaction hash from various possible fields
         const transactionHash =
           response.txHash ||
@@ -1064,28 +1063,27 @@ export class PolymarketService {
     telegramId: string
   ): Promise<OrderResponse> {
     try {
-      console.log("Creating order...");
+      console.log("Creating order from bot...");
 
       if (!signer) {
-        throw new Error("Signer is required for order placement");
+        throw new Error("Signer is required for order placement from bot");
       }
 
       // Get the address properly from JsonRpcSigner
       const account = await signer.getAddress();
+
+      console.log("[PLACE ORDER FROM BOT] Account:", account);
       const signerForClient = signer;
 
       // Create the main client first without credentials
-      const orderClient = new ClobClient(
+      const tempClient = new ClobClient(
         this.host,
         this.chainId,
-        signerForClient,
-        undefined, // No creds initially
-        0, // Browser wallet signature type
-        account // Funder address
+        signerForClient
       );
 
       // Now create or derive API key using the properly initialized client
-      const creds = await orderClient.createOrDeriveApiKey();
+      const creds = await tempClient.createOrDeriveApiKey();
 
       // Recreate the client with the credentials
       const finalClient = new ClobClient(
@@ -1093,7 +1091,7 @@ export class PolymarketService {
         this.chainId,
         signerForClient,
         creds,
-        0, // Browser wallet signature type
+        1, // Magic/Email Login signature type (since we're using private key)
         account // Funder address
       );
 
@@ -1158,7 +1156,7 @@ export class PolymarketService {
       );
 
       // Check if order was successful
-      if (response && response.success !== false) {
+      if (response && response.success) {
         // Try to extract transaction hash from various possible fields
         const transactionHash =
           response.txHash ||
